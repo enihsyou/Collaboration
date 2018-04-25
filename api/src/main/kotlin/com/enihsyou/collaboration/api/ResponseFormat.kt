@@ -1,5 +1,21 @@
 package com.enihsyou.collaboration.api
 
+/**客户端的请求格式*/
+open class RequestFormat<out T>(
+    method_: String,
+    payload_: T
+) {
+
+    /**请求方法*/
+    val method: String = method_
+
+    /**请求体*/
+    val payload: T? = payload_
+
+    /**由哪个用户提交的请求，如果是匿名用户则为空*/
+    val madeBy: UserIdentifier? = null
+}
+
 enum class ResponseReturnCode(val numberFormat: Int, val meaning: String) {
     OK_200(0, "everything ok"),
     PARAMETERS_400(1, "wrong parameters"),
@@ -7,6 +23,7 @@ enum class ResponseReturnCode(val numberFormat: Int, val meaning: String) {
     FUNCTION_404(3, "no such function"),
 }
 
+/**服务器的返回格式*/
 open class ResponseFormat<out T>(
     code_: ResponseReturnCode,
     data_: T
@@ -19,13 +36,13 @@ open class ResponseFormat<out T>(
     val message: String = code_.meaning
 
     /**payload 返回值*/
-    val data: T = data_
+    val payload: T? = data_
 
-    constructor(code: ResponseReturnCode, data: ()->T) :
+    constructor(code: ResponseReturnCode, data: () -> T) :
         this(code, data())
 }
 
-class OkResponse<T>(data: () -> T) :ResponseFormat<T>(ResponseReturnCode.OK_200, data)
+class OkResponse<T>(data: () -> T) : ResponseFormat<T>(ResponseReturnCode.OK_200, data)
 class RequestErrorResponse
 class InternalErrorResponse
 class NotFoundErrorResponse

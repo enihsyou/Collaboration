@@ -1,0 +1,20 @@
+plugins {
+    id "com.moowork.node" version "1.2.0"
+}
+
+group 'com.enihsyou.collaboration'
+version '1.0-SNAPSHOT'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+}
+//调用npm run dev
+task npmDev(type: NpmTask, dependsOn: npmInstall) {
+    group = 'node'
+    args = ['run', 'dev']
+}
