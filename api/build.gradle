@@ -1,8 +1,11 @@
 plugins {
+    id "org.springframework.boot" version "2.0.1.RELEASE"
+    id "io.spring.dependency-management" version "1.0.5.RELEASE"
     id "org.jetbrains.kotlin.jvm" version "1.2.40"
+    id "org.jetbrains.kotlin.plugin.spring" version "1.2.40"
+    id "org.jetbrains.kotlin.plugin.jpa" version "1.2.40"
+    id "org.jetbrains.dokka" version "0.9.16"
 }
-apply plugin: 'java'
-
 group 'com.enihsyou.collaboration'
 version '1.0-SNAPSHOT'
 
@@ -14,10 +17,10 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.5'
-    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '1.5.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    //implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '1.5.4'
 
-    runtimeOnly group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    //implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
@@ -27,4 +30,15 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "$buildDir/docs/dokkaHtml"
+    includeNonPublic = true
+    skipEmptyPackages = false
+}
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/docs/dokkaJavadoc"
 }
