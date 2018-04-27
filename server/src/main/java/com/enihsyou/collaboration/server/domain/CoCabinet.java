@@ -19,6 +19,8 @@ import java.util.Set;
 @Entity
 public class CoCabinet {
 
+    static final CoCabinet DUMMY = new CoCabinet();
+
     @Id
     @GeneratedValue
     private long id;
@@ -33,23 +35,22 @@ public class CoCabinet {
     @NotNull
     private Set<CoPadControlBlock> pads = Collections.emptySet();
 
-    /** 文件柜的创建时间 */
-    @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
-
     ////
     // Constructors
     ////
 
-    public CoCabinet() {}
+    /** 文件柜的创建时间 */
+    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
 
-    public CoCabinet(@NotNull final CoIndividual belongTo) {
-        this.belongTo = belongTo;
-    }
+    public CoCabinet() {}
 
     ////
     // Getter Setter
     ////
+
+    public CoCabinet(@NotNull final CoIndividual belongTo) {
+        this.belongTo = belongTo;
+    }
 
     public long getId() {
         return id;
@@ -84,7 +85,5 @@ public class CoCabinet {
         this.createdTime = createdTime;
         return this;
     }
-
-    static final CoCabinet DUMMY = new CoCabinet();
 }
 

@@ -6,10 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 
@@ -21,9 +21,16 @@ import java.util.Set;
 @Entity
 public class CoPad {
 
+    static final CoPad DUMMY = new CoPad();
+
     @Id
     @GeneratedValue
     private long id;
+
+    /** 创建这个文稿的所有者的文件柜 */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
+    private CoCabinet belongTo = CoCabinet.DUMMY;
 
     /** 创建本文稿的用户，具有对文稿管理的最高权限 */
     @OneToMany(mappedBy = "pad", fetch = FetchType.LAZY, orphanRemoval = true)
@@ -33,11 +40,10 @@ public class CoPad {
     /** 文稿的每个历史状态 */
     @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private Set<CoPadInstant> instants = new HashSet<>();
+    private Set<CoPadInstant> instants = Collections.emptySet();
 
     /** 文稿标题 */
-    @NotNull
-    private String title = "";
+    @NotNull private String title = "";
 
     /**
      * 当前文章中的🔒，每一个都是互相不重叠的区间范围
@@ -45,26 +51,25 @@ public class CoPad {
      */
     @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private Set<CoLock> locks = new HashSet<>();
-
-    /** 用户注册的时间 */
-    @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
+    private Set<CoLock> locks = Collections.emptySet();
 
     ////
     // Constructors
     ////
 
-    public CoPad() {
-    }
+    /** 用户注册的时间 */
+    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
 
-    public CoPad(@NotNull final String title) {
-        this.title = title;
+    public CoPad() {
     }
 
     ////
     // Getter Setter
     ////
+
+    public CoPad(@NotNull final String title) {
+        this.title = title;
+    }
 
     public long getId() {
         return id;
@@ -109,6 +114,4 @@ public class CoPad {
         this.createdTime = createdTime;
         return this;
     }
-
-    static final CoPad DUMMY = new CoPad();
 }

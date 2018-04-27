@@ -20,7 +20,7 @@ public class CoBlame {
     @NotNull
     private CoIndividual belongTo = CoIndividual.DUMMY;
 
-    /**左端点，包含*/
+    /** 左端点，包含 */
     private int left;
 
     /** 右端点，不包含 */

@@ -23,8 +23,7 @@ public class CoInviteLink {
     private String token = "";
 
     /** 被邀请的人 */
-    @NotNull
-    private String invitee = "";
+    @NotNull private String invitee = "";
 
     /** 被邀请者加入的文稿[CoPad] */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,16 +31,13 @@ public class CoInviteLink {
     private CoPad pad = CoPad.DUMMY;
 
     /** 被邀请者被授予的权限 */
-    @NotNull
-    private CoLinkStatus permission = CoLinkStatus.REVOKED;
+    @NotNull private CoLinkStatus permission = CoLinkStatus.REVOKED;
 
     /** 这个邀请链接的创建时间 */
-    @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
+    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
 
     /** 这个邀请链接过期的时间，重复邀请会延长寿命 */
-    @NotNull
-    private LocalDateTime expiredTime = createdTime.plusDays(1);
+    @NotNull private LocalDateTime expiredTime = createdTime.plusDays(1);
 
     ////
     // Constructors

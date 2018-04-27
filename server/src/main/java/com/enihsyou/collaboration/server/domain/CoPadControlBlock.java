@@ -24,52 +24,42 @@ public class CoPadControlBlock {
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    private CoCabinet cabinet = new CoCabinet();
+    private CoCabinet cabinet = CoCabinet.DUMMY;
 
     /** 链接的另一端：文稿 */
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    private CoPad pad = new CoPad();
+    private CoPad pad = CoPad.DUMMY;
 
     /** 链接状态 */
-    @NotNull
-    private CoLinkStatus status = CoLinkStatus.REVOKED;
+    @NotNull private CoLinkStatus status = CoLinkStatus.REVOKED;
 
     /** 链接的创建时间 */
-    @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
+    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
 
-    public static class PK implements Serializable {
-
-        long cabinet;
-
-        long pad;
+    public CoPadControlBlock() {
     }
 
     ////
     // Constructors
     ////
 
-    public CoPadControlBlock() {
-    }
-
-    public CoPadControlBlock(@NotNull final CoCabinet cabinet,
-                             @NotNull final CoPad pad,
-                             @NotNull final CoLinkStatus status) {
+    public CoPadControlBlock(
+        @NotNull final CoCabinet cabinet, @NotNull final CoPad pad, @NotNull final CoLinkStatus status) {
         this.cabinet = cabinet;
         this.pad = pad;
         this.status = status;
     }
 
-    ////
-    // Getter Setter
-    ////
-
     @NotNull
     public CoCabinet getCabinet() {
         return cabinet;
     }
+
+    ////
+    // Getter Setter
+    ////
 
     public CoPadControlBlock setCabinet(@NotNull final CoCabinet cabinet) {
         this.cabinet = cabinet;
@@ -104,6 +94,13 @@ public class CoPadControlBlock {
     public CoPadControlBlock setCreatedTime(@NotNull final LocalDateTime createdTime) {
         this.createdTime = createdTime;
         return this;
+    }
+
+    public static class PK implements Serializable {
+
+        long cabinet;
+
+        long pad;
     }
 }
 

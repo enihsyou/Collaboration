@@ -10,7 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -32,25 +32,21 @@ public class CoPadInstant {
     private CoPad belongTo = CoPad.DUMMY;
 
     /** 为这个瞬时状态添加的标记 */
-    @Nullable
-    private String tag;
+    @Nullable private String tag;
 
     /** 文稿标题 */
-    @NotNull
-    private String title = "";
+    @NotNull private String title = "";
 
     /** 文稿主体 */
-    @NotNull
-    private String body = "";
+    @NotNull private String body = "";
 
     /** 文章中每个用户的贡献区间 */
     @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private Set<CoBlame> contributes = new HashSet<>();
+    private Set<CoBlame> contributes = Collections.emptySet();
 
     /** 文稿的创建时间 */
-    @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
+    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
 
     ////
     // Constructors

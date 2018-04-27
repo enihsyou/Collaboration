@@ -14,45 +14,43 @@ import java.time.LocalDateTime;
 @Entity
 public class CoIndividual {
 
+    static final CoIndividual DUMMY = new CoIndividual();
+
+    /** 用户注册的时间 */
+    @NotNull private final LocalDateTime createdTime = LocalDateTime.now();
+
     @Id
     @GeneratedValue
     private long id;
 
     /** 用户登录名 */
-    @NotNull
-    private String username = "";
+    @NotNull private String username = "";
 
     /** 用户密码，禁止保存明文 */
-    @NotNull
-    private String password = "";
+    @NotNull private String password = "";
 
     /** 用户最后登录的时间 */
-    @Nullable
-    private LocalDateTime lastLoginTime;
-
-    /** 用户注册的时间 */
-    @NotNull
-    private final LocalDateTime createdTime = LocalDateTime.now();
-
-    @OneToOne(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
-    @NotNull
-    private CoCabinet cabinet = CoCabinet.DUMMY;
+    @Nullable private LocalDateTime lastLoginTime;
 
     ////
     // Constructors
     ////
 
-    public CoIndividual() {
-    }
+    @OneToOne(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
+    @NotNull
+    private CoCabinet cabinet = CoCabinet.DUMMY;
 
-    public CoIndividual(@NotNull final String username, @NotNull final String password) {
-        this.username = username;
-        this.password = password;
+    public CoIndividual() {
     }
 
     ////
     // Getter Setter
     ////
+
+    public CoIndividual(@NotNull final String username, @NotNull final String password) {
+        this.username = username;
+        this.password = password;
+    }
 
     public long getId() {
         return id;
@@ -92,7 +90,5 @@ public class CoIndividual {
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }
-
-    static final CoIndividual DUMMY = new CoIndividual();
 }
 
