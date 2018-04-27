@@ -1,8 +1,9 @@
 package com.enihsyou.collaboration.server.dto
 
-class UserLoginDTO
+class AccountLoginDTO
 
-class UserRegisteDTO
+class AccountRegisteDTO
+class PasswordChangeDTO
 
 class PasswordResetDTO
 

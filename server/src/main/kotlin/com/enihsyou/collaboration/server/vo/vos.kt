@@ -1,7 +1,8 @@
 package com.enihsyou.collaboration.server.vo
 
-class UserInfoBriefVO
-class UserInfoDetailVO
+abstract class AccountInfoVO
+class AccountInfoBriefVO : AccountInfoVO()
+class AccountInfoDetailVO : AccountInfoVO()
 class CabinetInfoBriefVO
 class CabinetInfoDetailVO
 class PadInfoBriefVO
