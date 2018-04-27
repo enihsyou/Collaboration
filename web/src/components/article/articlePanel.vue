@@ -1,19 +1,24 @@
 <template>
   <div id="article-layout" @click="releaseMouse">
-    <div id="content-layout">
-      <span id="content" ref="content"></span>
+    <div id="sub_btn_group" v-show="hasRange&&!callBtn">
+      <i class="tip el-icon-d-arrow-right" v-if="trySaveCount > 2"></i>
+      <el-button-group>
+        <el-button id="sub_btn" type="primary" size="large" @click.stop="subContent">
+          提交
+        </el-button>
+        <el-button id="cancel_sub_btn" type="info" size="large" @click.stop="cancelSubContent">
+          取消
+        </el-button>
+      </el-button-group>
     </div>
-    <el-button id="mod_btn" size="mini" @click.stop="modContent" v-show="callBtn">
-      修改
-    </el-button>
-    <el-button-group id="sub_btn_group" v-show="hasRange&&!callBtn">
-      <el-button id="sub_btn" type="primary" size="large" @click.stop="subContent">
-        提交
-      </el-button>
-      <el-button id="cancel_sub_btn" type="info" size="large" @click.stop="cancelSubContent">
-        取消
-      </el-button>
-    </el-button-group>
+    <div id="content-layout">
+      <div class="inner">
+        <span id="content" ref="content"></span>
+        <el-button id="mod_btn" size="mini" @click.stop="modContent" v-show="callBtn">
+          修改
+        </el-button>
+      </div>
+    </div>
     <div class="cursor"></div>
   </div>
 </template>
@@ -25,8 +30,6 @@
     name: "articlePanel",
     data() {
       return {
-        title: `背影`,
-        author: `朱自清`,
         content:
           `　　我与父亲不相见已二年余了，我最不能忘记的是他的背影。那年冬天，祖母死了，父亲的差使也交卸了，正是祸不单行的日子，我从北京到徐州，打算跟着父亲奔丧回家。到徐州见着父亲，看见满院狼藉的东西，又想起祖母，不禁簌簌地流下眼泪。父亲说，“事已如此，不必难过，好在天无绝人之路！”
 　　回家变卖典质，父亲还了亏空；又借钱办了丧事。这些日子，家中光景很是惨淡，一半为了丧事，一半为了父亲赋闲。丧事完毕，父亲要到南京谋事，我也要回北京念书，我们便同行。
@@ -36,11 +39,8 @@
 　　近几年来，父亲和我都是东奔西走，家中光景是一日不如一日。他少年出外谋生，独力支持，做了许多大事。那知老境却如此颓唐！他触目伤怀，自然情不能自已。情郁于中，自然要发之于外；家庭琐屑便往往触他之怒。他待我渐渐不同往日。但最近两年的不见，他终于忘却我的不好，只是惦记着我，惦记着我的儿子。我北来后，他写了一信给我，信中说道，“我身体平安，惟膀子疼痛利害，举箸提笔，诸多不便，大约大去之期不远矣。”我读到此处，在晶莹的泪光中，又看见那肥胖的，青布棉袍，黑布马褂的背影。唉！我不知何时再能与他相见！`,
         hasRange: false,
         callBtn: false,
-      }
-    },
-    computed: {
-      contentHTML() {
-        return this.content.replace(/\n/g, '<br>')
+        resizeLayoutTimer: null,
+        trySaveCount: 0
       }
     },
     methods: {
@@ -53,7 +53,11 @@
           mod_btn.innerHTML = window.getSelection().toString() === '' ? '插入' : '修改';
           mod_btn.style.left = `calc(${e.clientX}px - 2em)`;
           mod_btn.style.top = `calc(${e.clientY}px - 3em)`;
+          return;
         }
+        //用户点击编辑框外尝试保存
+        this.trySaveCount = e.target.id !== 'editArea' ? this.trySaveCount + 1 : 0;
+
       },
       subContent() {
         //提交修改的按钮
@@ -87,29 +91,63 @@
         editArea[0].focus();
         this.callBtn = false;
         this.hasRange = true;
-        const sub_btns = document.querySelector('#sub_btn_group');
-        console.log(editArea[0]);
-        sub_btns.style.left = `50%`;
-        sub_btns.style.transform = `translateX(-50%)`;
-        sub_btns.style.top = `calc(${editArea[0].offsetTop}px - 3em)`;
+        this.trySaveCount = 0;
       }
     },
+    created() {
+    },
     mounted() {
-      this.$refs.content.innerHTML = this.contentHTML;
+      //todo 根据文章id获取文章content
+      //。。。
+      this.$refs.content.innerHTML = this.content.replace(/\n/g, '<br>');
+    },
+    destroyed() {
+
     }
   }
 </script>
 
 <style lang="stylus">
   #editArea
-    display inline
+    display inline !important
     box-shadow 0 0 2px 2px deepskyblue
 </style>
 
 <style lang="stylus" scoped>
   #content-layout
-    margin: 2em;
+    width: 794px;
+    min-height: 995px;
+    background-color white
+    box-shadow 2px 2px .3em 2px grey
+    .inner
+      margin 1em 0 2em 0
+      padding 4em
 
   #mod_btn, #sub_btn_group
     position absolute
+    z-index 999
+    right 2em
+    top .75em
+    .tip
+      position absolute
+      margin-top 1px
+      align-items center
+      animation flicker 3s linear 0s infinite
+      zoom 2
+
+  @keyframes flicker
+    0%
+      left -4em
+      opacity 0
+    30%
+      left -2em
+      opacity 1
+    50%
+      left -1.5em
+      opacity 0
+    100%
+      left -1.5em
+      opacity 0
+
+
 </style>

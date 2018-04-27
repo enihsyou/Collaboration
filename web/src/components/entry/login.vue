@@ -11,7 +11,7 @@
             </div>
         </div>
         <div class="form__content" @keypress.enter="submit">
-            <h1>NTM协同文档系统</h1>
+            <h1>NTM协同文档</h1>
             <div class="styled-input">
                 <input type="text" class="styled-input__input" title="" v-model="username" maxlength="20"
                        @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
@@ -47,9 +47,6 @@
                         </span>
                     </span>
             </button>
-            <div v-if="isDev">
-                <router-link to="/admin_register">管理员注册（开发测试）</router-link>
-            </div>
             <router-link to="/forgot">忘记密码</router-link>
         </div>
     </div>
@@ -107,10 +104,6 @@
             sessionStorage.school_id = res.data.school_id;
             sessionStorage.school_name = res.data.school_name;
             sessionStorage.last_login_time = res.data.last_login_time;
-            // this.$store.commit('login', {
-            //     username: this.username,
-            //     token: res.headers['x-auth-token']
-            // });
             this.$Message.success('登录成功');
             this.$router.push(this.$route.query.redirect || '/user');
           }, (res) => {
