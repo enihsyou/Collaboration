@@ -8,11 +8,11 @@ import RouterConfig from './router'
 import axios from 'axios';
 import App from './App'
 
-const router = new VueRouter(RouterConfig);
-
 Vue.config.productionTip = false;
 Vue.use(ElementUI);
 Vue.use(VueRouter);
+
+const router = new VueRouter(RouterConfig);
 
 const util = {
   env: process.env.NODE_ENV,
@@ -194,7 +194,7 @@ Date.prototype.format = function (fmt) {
 router.beforeEach((to, from, next) => {
   //设置标签标题
   let title = to.meta.title ? to.meta.title : '';
-  window.document.title = title ? `${title} - NTM签到系统` : 'NTM签到系统';
+  window.document.title = title ? `${title} - NTM协同文档系统` : 'NTM协同文档系统';
   if (to.matched.some(record => record.meta.requiresRole && !record.meta.requiresRole[sessionStorage.role])) {
     console.log('权限错误，当前用户组：' + sessionStorage.role);
     ElementUI.message.error(sessionStorage.role ? '用户组越权警告' : '请先登录');
@@ -258,6 +258,5 @@ Vue.prototype.$ = util;
 new Vue({
   el: '#app',
   router: router,
-  components: {App},
-  template: '<App/>'
+  render: h => h(App)
 });

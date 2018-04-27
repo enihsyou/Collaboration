@@ -41,9 +41,6 @@ export default {
     },
     {
       path: '/user',
-      meta: {
-        title: '文章编辑 - NTM协同文档系统',
-      },
       component: (resolve) => require(['./components/article/layout'], resolve),
       children: [
         {

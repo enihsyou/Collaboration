@@ -26,7 +26,7 @@
               <i class="el-icon-document"></i>
               <span>我的文章</span>
             </template>
-            <router-link v-for="paper in myArticles" :key="paper.id" :to="paper.id">
+            <router-link v-for="paper in myArticles" :key="paper.id" :to="`/user/${paper.id}`">
               <el-menu-item :index="paper.id">
                 {{paper.title}}
               </el-menu-item>
@@ -38,7 +38,7 @@
               <i class="el-icon-tickets"></i>
               <span>我参与的文章</span>
             </template>
-            <router-link v-for="paper in otherArticles" :key="paper.id" :to="paper.id">
+            <router-link v-for="paper in otherArticles" :key="paper.id" :to="`/user/${paper.id}`">
               <el-menu-item :index="paper.id">
                 {{paper.title}}
               </el-menu-item>
@@ -98,6 +98,9 @@
       toggleNav() {
         this.navHasHide = !this.navHasHide;
       },
+    },
+    mounted() {
+
     }
   }
 </script>
@@ -126,6 +129,7 @@
     text-align: left
     background-color: #E9EEF3
     overflow-x hidden
+    transition all 500ms ease-in-out 0s
     .draftArticle
       margin-top 1.5em
       margin-bottom .5em
