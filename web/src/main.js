@@ -3,6 +3,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router';
 import ElementUI from 'element-ui';
+// fade/zoom 等
+import 'element-ui/lib/theme-chalk/base.css';
 import 'element-ui/lib/theme-chalk/index.css';
 import RouterConfig from './router'
 import axios from 'axios';

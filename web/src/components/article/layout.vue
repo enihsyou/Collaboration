@@ -12,7 +12,7 @@
                  :icon="navHasHide?'el-icon-arrow-right':'el-icon-arrow-left'"
                  type="text" @click="toggleNav" circle>
       </el-button>
-      <el-aside v-show="!navHasHide" width="13em">
+      <el-aside :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}" width="13em">
         <el-menu :default-openeds="['myArticles','otherArticles']"
                  :default-active="currenActiveItem">
           <!--draftArticle-->
@@ -21,34 +21,38 @@
             新建文章
           </el-button>
           <!--我的文章-->
-          <el-submenu index="myArticles">
+          <el-submenu class="submenu" index="myArticles">
             <template slot="title">
               <i class="el-icon-document"></i>
               <span>我的文章</span>
             </template>
-            <router-link v-for="paper in myArticles" :key="paper.id" :to="`/user/${paper.id}`">
-              <el-menu-item :index="paper.id">
-                {{paper.title}}
-              </el-menu-item>
-            </router-link>
+            <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="paper.id"
+                          @click="changeArticle(paper)">
+              {{paper.title}}
+            </el-menu-item>
           </el-submenu>
           <!--我参与的文章-->
-          <el-submenu index="otherArticles">
+          <el-submenu class="submenu" index="otherArticles">
             <template slot="title">
               <i class="el-icon-tickets"></i>
               <span>我参与的文章</span>
             </template>
-            <router-link v-for="paper in otherArticles" :key="paper.id" :to="`/user/${paper.id}`">
-              <el-menu-item :index="paper.id">
-                {{paper.title}}
-              </el-menu-item>
-            </router-link>
+            <el-menu-item class="submenu-item" v-for="paper in otherArticles" :key="paper.id" :index="paper.id"
+                          @click="changeArticle(paper)">
+              {{paper.title}}
+            </el-menu-item>
           </el-submenu>
         </el-menu>
+        <el-button class="btn_logout" type="danger" @click="logout">
+          <i class="el-icon-back"></i>
+          &#12288;退出登录
+        </el-button>
       </el-aside>
       <!--Main-->
-      <el-main>
-        <router-view/>
+      <el-main :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}">
+        <transition name="el-zoom-in-top" mode="out-in" appear>
+          <router-view :key="currentArticle.id"/>
+        </transition>
       </el-main>
     </el-container>
     <!--footer-->
@@ -76,18 +80,25 @@
             id: 'some_hex_string2',
             title: '他的文章2'
           }
-        ]
+        ],
+        currentArticle: {}
       }
     },
     methods: {
       draftArticle() {
         let random = Math.random().toString(16).slice(8);
-        this.myArticles.push({
+        this.currentArticle = {
           id: random,
           title: '我的文章_' + random
-        });
+        };
+        this.myArticles.push(this.currentArticle);
         this.currenActiveItem = random;
-        this.$router.push(random)
+        this.$router.push(`/user/${random}`)
+      },
+      changeArticle(currentArticle) {
+        this.currentArticle = currentArticle;
+        this.$router.push(`/user/${this.currentArticle.id}`);
+        console.log(`跳转到文章：${this.currentArticle.id}:${this.currentArticle.title}`);
       },
       hideNav() {
         this.navHasHide = true;
@@ -98,6 +109,11 @@
       toggleNav() {
         this.navHasHide = !this.navHasHide;
       },
+      logout() {
+        delete sessionStorage.token;
+        this.$message.success('登出成功');
+        this.$router.push('/login');
+      }
     },
     mounted() {
 
@@ -125,21 +141,29 @@
       border-radius 1em
 
   .el-aside
+    position relative
     color: #333
     text-align: left
-    background-color: #E9EEF3
+    background-color: white
     overflow-x hidden
     transition all 500ms ease-in-out 0s
+    box-shadow 2px 0 1px #50626e
+    .submenu-item
+      box-shadow 1px 1px 1px 1px #e6e6e6
+
     .draftArticle
       margin-top 1.5em
       margin-bottom .5em
 
-    &.hide-nav
-      left 1em
-      background rgba(200, 200, 200, 0.66)
+    .btn_logout
+      position absolute
+      bottom 2em
+      left 1.5em
+      width 10em
 
-    &.show-nav
-      left 0
+    &.hide-nav
+      margin-right -13em
+      transform translateX(-100%)
 
   #toggle-nav
     position absolute
@@ -148,7 +172,7 @@
     top 6em
     &.hide-nav
       left 1em
-      background rgba(200, 200, 200, 0.66)
+      background rgba(188, 188, 188, 0.88)
 
     &.show-nav
       left 12em
@@ -160,7 +184,7 @@
     color: #333
     text-align: left
     height 100% -7em
-    background-color: #dfe4e9
+    background-color: #cbcfd3
     overflow auto
     display flex
     justify-content center
