@@ -1,13 +1,14 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,13 +26,13 @@ public class CoPad {
     private long id;
 
     /** 创建本文稿的用户，具有对文稿管理的最高权限 */
-    @ManyToOne
+    @OneToMany(mappedBy = "pad", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private CoIndividual belongTo = new CoIndividual();
+    private Set<CoPadControlBlock> cabinets = Collections.emptySet();
 
     /** 文稿的每个历史状态 */
+    @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    @OneToMany
     private Set<CoPadInstant> instants = new HashSet<>();
 
     /** 文稿标题 */
@@ -42,7 +43,7 @@ public class CoPad {
      * 当前文章中的🔒，每一个都是互相不重叠的区间范围
      * 如果文档中存在未释放的🔒，则不能保存历史状态
      */
-    @OneToMany
+    @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
     private Set<CoLock> locks = new HashSet<>();
 
@@ -57,9 +58,7 @@ public class CoPad {
     public CoPad() {
     }
 
-    public CoPad(@NotNull final CoIndividual belongTo,
-                 @NotNull final String title) {
-        this.belongTo = belongTo;
+    public CoPad(@NotNull final String title) {
         this.title = title;
     }
 
@@ -69,16 +68,6 @@ public class CoPad {
 
     public long getId() {
         return id;
-    }
-
-    @NotNull
-    public CoIndividual getBelongTo() {
-        return belongTo;
-    }
-
-    public CoPad setBelongTo(@NotNull final CoIndividual belongTo) {
-        this.belongTo = belongTo;
-        return this;
     }
 
     @NotNull
@@ -120,4 +109,6 @@ public class CoPad {
         this.createdTime = createdTime;
         return this;
     }
+
+    static final CoPad DUMMY = new CoPad();
 }

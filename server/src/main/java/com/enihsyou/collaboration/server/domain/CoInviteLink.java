@@ -1,8 +1,10 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
+import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
@@ -25,9 +27,9 @@ public class CoInviteLink {
     private String invitee = "";
 
     /** 被邀请者加入的文稿[CoPad] */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    private CoPad pad = new CoPad();
+    private CoPad pad = CoPad.DUMMY;
 
     /** 被邀请者被授予的权限 */
     @NotNull
@@ -48,10 +50,11 @@ public class CoInviteLink {
     public CoInviteLink() {
     }
 
-    public CoInviteLink(@NotNull final String token,
-                        @NotNull final String invitee,
-                        @NotNull final CoPad pad,
-                        @NotNull final CoLinkStatus permission) {
+    public CoInviteLink(
+        @NotNull final String token,
+        @NotNull final String invitee,
+        @NotNull final CoPad pad,
+        @NotNull final CoLinkStatus permission) {
         this.token = token;
         this.invitee = invitee;
         this.pad = pad;
@@ -63,8 +66,8 @@ public class CoInviteLink {
     ////
 
     /** 发起邀请的人 */
-    public CoIndividual getInviter() {
-        return pad.getBelongTo();
+    public CoCabinet getInviter() {
+        throw new NotImplementedError();
     }
 
     @NotNull

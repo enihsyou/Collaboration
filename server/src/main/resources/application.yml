@@ -8,22 +8,18 @@ spring:
     dispatch-options-request: true
 
   jpa:
-    show-sql: false
-    generate-ddl: true
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         use_sql_comments: true
         format_sql: true
+        globally_quoted_identifiers: true
 
   session:
     store-type: jdbc
     jdbc:
       initialize-schema: always
-
-  data:
-    rest:
-      return-body-on-create: true
-      return-body-on-update: true
 
   jackson:
     serialization:
@@ -40,14 +36,21 @@ server:
 spring:
   profiles: dev
   datasource:
-    username: root
+    username: enihsyou
     password: enihsyou
-    url: jdbc:mysql://localhost:3306/collaboration?useSSL=false
+    url: jdbc:postgresql://localhost:5432/enihsyou?currentSchema=collaboration
 
+# https://stackoverflow.com/a/40364487
   jpa:
     show-sql: true
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
 
 logging:
   level:

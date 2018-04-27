@@ -1,4 +1,4 @@
-package com.enihsyou.collaboration.api
+package com.enihsyou.collaboration.server.domain
 
 enum class CoLinkStatus {
 

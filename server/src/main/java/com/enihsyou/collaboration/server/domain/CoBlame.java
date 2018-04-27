@@ -1,8 +1,9 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -15,13 +16,15 @@ public class CoBlame {
     @GeneratedValue
     private long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    private CoIndividual belongTo = new CoIndividual();
+    private CoIndividual belongTo = CoIndividual.DUMMY;
 
-    private int from;
+    /**左端点，包含*/
+    private int left;
 
-    private int to;
+    /** 右端点，不包含 */
+    private int right;
 
     ////
     // Constructors
@@ -30,10 +33,10 @@ public class CoBlame {
     public CoBlame() {
     }
 
-    public CoBlame(@NotNull final CoIndividual belongTo, final int from, final int to) {
+    public CoBlame(@NotNull final CoIndividual belongTo, final int left, final int right) {
         this.belongTo = belongTo;
-        this.from = from;
-        this.to = to;
+        this.left = left;
+        this.right = right;
     }
 
     ////
@@ -54,21 +57,21 @@ public class CoBlame {
         return this;
     }
 
-    public int getFrom() {
-        return from;
+    public int getLeft() {
+        return left;
     }
 
-    public CoBlame setFrom(final int from) {
-        this.from = from;
+    public CoBlame setLeft(final int left) {
+        this.left = left;
         return this;
     }
 
-    public int getTo() {
-        return to;
+    public int getRight() {
+        return right;
     }
 
-    public CoBlame setTo(final int to) {
-        this.to = to;
+    public CoBlame setRight(final int right) {
+        this.right = right;
         return this;
     }
 }

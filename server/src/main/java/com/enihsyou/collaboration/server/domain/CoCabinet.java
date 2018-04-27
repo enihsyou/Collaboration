@@ -1,14 +1,15 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -22,24 +23,25 @@ public class CoCabinet {
     @GeneratedValue
     private long id;
 
-    /** 标注这个文件柜属于哪个用户的 */
-    @ManyToOne
+    /** 拥有这个文件柜的用户 */
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private CoIndividual belongTo = new CoIndividual();
+    private CoIndividual belongTo = CoIndividual.DUMMY;
 
     /** 文件柜里面存有的文档集合，包括被邀请加入的 */
-    @OneToMany
-    private Set<CoPad> pads = new HashSet<>();
+    @OneToMany(mappedBy = "cabinet", fetch = FetchType.LAZY, orphanRemoval = true)
+    @NotNull
+    private Set<CoPadControlBlock> pads = Collections.emptySet();
 
     /** 文件柜的创建时间 */
-    private LocalDateTime createdTime;
+    @NotNull
+    private LocalDateTime createdTime = LocalDateTime.now();
 
     ////
     // Constructors
     ////
 
-    public CoCabinet() {
-    }
+    public CoCabinet() {}
 
     public CoCabinet(@NotNull final CoIndividual belongTo) {
         this.belongTo = belongTo;
@@ -63,22 +65,26 @@ public class CoCabinet {
         return this;
     }
 
-    public Set<CoPad> getPads() {
+    @NotNull
+    public Set<CoPadControlBlock> getPads() {
         return pads;
     }
 
-    public CoCabinet setPads(final Set<CoPad> pads) {
+    public CoCabinet setPads(@NotNull final Set<CoPadControlBlock> pads) {
         this.pads = pads;
         return this;
     }
 
+    @NotNull
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }
 
-    public CoCabinet setCreatedTime(final LocalDateTime createdTime) {
+    public CoCabinet setCreatedTime(@NotNull final LocalDateTime createdTime) {
         this.createdTime = createdTime;
         return this;
     }
+
+    static final CoCabinet DUMMY = new CoCabinet();
 }
 

@@ -1,9 +1,10 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
-import com.enihsyou.collaboration.api.CoPadControlBlock.PK;
+import com.enihsyou.collaboration.server.domain.CoPadControlBlock.PK;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.ManyToOne;
@@ -21,13 +22,13 @@ public class CoPadControlBlock {
 
     /** 链接的一端：文件柜 */
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoCabinet cabinet = new CoCabinet();
 
     /** 链接的另一端：文稿 */
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoPad pad = new CoPad();
 
@@ -41,9 +42,9 @@ public class CoPadControlBlock {
 
     public static class PK implements Serializable {
 
-        long cabinetId;
+        long cabinet;
 
-        long padId;
+        long pad;
     }
 
     ////

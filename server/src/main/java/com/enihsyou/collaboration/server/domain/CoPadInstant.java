@@ -1,11 +1,13 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -24,6 +26,11 @@ public class CoPadInstant {
     @GeneratedValue
     private long id;
 
+    /** 这个状态属于哪个文稿 */
+    @ManyToOne
+    @NotNull
+    private CoPad belongTo = CoPad.DUMMY;
+
     /** 为这个瞬时状态添加的标记 */
     @Nullable
     private String tag;
@@ -37,9 +44,9 @@ public class CoPadInstant {
     private String body = "";
 
     /** 文章中每个用户的贡献区间 */
-    @OneToMany
+    @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
     @NotNull
-    private Set<CoBlame> contributes =  new HashSet<>();
+    private Set<CoBlame> contributes = new HashSet<>();
 
     /** 文稿的创建时间 */
     @NotNull
@@ -52,7 +59,8 @@ public class CoPadInstant {
     public CoPadInstant() {
     }
 
-    public CoPadInstant(@NotNull final String title, @NotNull final String body) {
+    public CoPadInstant(@NotNull final CoPad belongTo, @NotNull final String title, @NotNull final String body) {
+        this.belongTo = belongTo;
         this.title = title;
         this.body = body;
     }
@@ -63,6 +71,16 @@ public class CoPadInstant {
 
     public long getId() {
         return id;
+    }
+
+    @NotNull
+    public CoPad getBelongTo() {
+        return belongTo;
+    }
+
+    public CoPadInstant setBelongTo(@NotNull final CoPad belongTo) {
+        this.belongTo = belongTo;
+        return this;
     }
 
     @Nullable

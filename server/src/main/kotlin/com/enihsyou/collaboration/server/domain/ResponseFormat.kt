@@ -1,4 +1,4 @@
-package com.enihsyou.collaboration.api
+package com.enihsyou.collaboration.server.domain
 
 /**客户端的请求格式*/
 open class RequestFormat<out T>(
@@ -13,7 +13,7 @@ open class RequestFormat<out T>(
     val payload: T? = payload_
 
     /**由哪个用户提交的请求，如果是匿名用户则为空*/
-    val madeBy: UserIdentifier? = null
+    val madeBy: Long? = null
 }
 
 enum class ResponseReturnCode(val numberFormat: Int, val meaning: String) {

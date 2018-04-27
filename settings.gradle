@@ -1,4 +1,4 @@
 rootProject.name = 'collaboration'
-include 'api'
+
 include 'server'
 include 'web'

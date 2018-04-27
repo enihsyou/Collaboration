@@ -1,11 +1,13 @@
-package com.enihsyou.collaboration.api;
+package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
 
 /** 代表每个用户的具体信息 */
@@ -31,6 +33,10 @@ public class CoIndividual {
     /** 用户注册的时间 */
     @NotNull
     private final LocalDateTime createdTime = LocalDateTime.now();
+
+    @OneToOne(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
+    @NotNull
+    private CoCabinet cabinet = CoCabinet.DUMMY;
 
     ////
     // Constructors
@@ -86,5 +92,7 @@ public class CoIndividual {
     public LocalDateTime getCreatedTime() {
         return createdTime;
     }
+
+    static final CoIndividual DUMMY = new CoIndividual();
 }
 
