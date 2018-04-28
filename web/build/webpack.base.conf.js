@@ -4,10 +4,9 @@ const utils = require('./utils');
 const config = require('../config');
 const vueLoaderConfig = require('./vue-loader.conf');
 
-function resolve (dir) {
+function resolve(dir) {
   return path.join(__dirname, '..', dir)
 }
-
 
 
 module.exports = {
@@ -28,6 +27,13 @@ module.exports = {
       'vue$': 'vue/dist/vue.esm.js',
       '@': resolve('src'),
     }
+  },
+  externals: {
+    "jquery": 'jQuery',
+    "axios": 'axios',
+    "vue": 'Vue',
+    "vue-router": 'VueRouter',
+    "element-ui": "ELEMENT"
   },
   module: {
     rules: [
