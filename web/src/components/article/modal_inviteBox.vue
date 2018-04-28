@@ -5,11 +5,11 @@
       <el-select style="width:100%;" v-model="linkPermission" placeholder="请选择">
         <el-option label="通过链接获得文档的任何人【只可查看】" value="readonly">
           <i class=" el-icon-search"></i>
-          <span class="select-option-label">获得文档的任何人【只可查看】</span>
+          <span class="select-option-label">通过链接获得文档的任何人【只可查看】</span>
         </el-option>
         <el-option label="通过链接获得文档的任何人【可编辑】" value="editable">
           <i class=" el-icon-edit"></i>
-          <span class="select-option-label">获得文档的任何人【可编辑】</span>
+          <span class="select-option-label">通过链接获得文档的任何人【可编辑】</span>
         </el-option>
         <el-option label="仅以下列表成员【可查看/编辑】" value="groups">
           <i class=" el-icon-edit-outline"></i>
