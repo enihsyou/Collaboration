@@ -1,6 +1,6 @@
 <template>
   <div id="article-layout">
-    <div id="sub_btn_group" v-show="hasRange&&!callBtn">
+    <div id="sub_btn_group" v-show="range &&!callBtn">
       <i class="tip el-icon-d-arrow-right" v-if="trySaveCount > 2"></i>
       <el-button-group>
         <el-button id="sub_btn" type="success" size="large" @click.stop="subContent">
@@ -20,7 +20,10 @@
       </div>
     </div>
     <el-button id="share_btn" size="large" type="primary" icon="el-icon-plus"
-               @click="shareArticle" circle></el-button>
+               @click="shareArticle" circle v-if="isOwner"></el-button>
+    <div id="editableArea" ref="editableArea" contenteditable v-show="range">
+
+    </div>
     <div class="cursor"></div>
   </div>
 </template>
@@ -34,16 +37,17 @@
     data() {
       return {
         content: '',
-        hasRange: false,
+        range: null,
         callBtn: false,
         resizeLayoutTimer: null,
+        isOwner: true,
         trySaveCount: 0
       }
     },
     methods: {
       releaseMouse(e) {
         //未有编辑区域
-        if ($('#editArea').length === 0) {
+        if (this.$refs.editableArea.innerHTML === '') {
           this.callBtn = true;
           //移动编辑按钮到鼠标处
           const mod_btn = document.querySelector('#mod_btn');
@@ -53,41 +57,57 @@
           return;
         }
         //用户点击编辑框外尝试保存
-        this.trySaveCount = e.target.id !== 'editArea' ? this.trySaveCount + 1 : 0;
+        this.trySaveCount = e.target.id !== 'editableArea' ? this.trySaveCount + 1 : 0;
 
       },
       subContent() {
         //提交修改的按钮
         console.log('假装向服务器申请提交修改');
-        let lastContent = this.$refs.content.innerHTML;
-        $(`<span>${$('#editArea').html()}</span>`).replaceAll('#editArea');
-        this.$refs.content.innerHTML = lastContent.replace(/(<div([^>]+)>)/ig, "");
-        this.hasRange = false;
+        this.range.insertNode('测试啊');
+
+        this.range.insertNode(this.range.cloneContents());
+        this.range = null;
       },
       cancelSubContent() {
+        console.log(this.range);
         //取消修改的按钮
         console.log('假装向服务器申请提交修改');
         let lastContent = this.$refs.content.innerHTML;
-        $(`<span>${$('#editArea').html()}</span>`).replaceAll('#editArea');
+        $(`<span>${$('#editableArea').html()}</span>`).replaceAll('#editableArea');
         this.$refs.content.innerHTML = lastContent.replace(/(<div([^>]+)>)/ig, "");
-        this.hasRange = false;
+        this.range = null;
       },
       modContent() {
-        //申请修改的按钮
-        console.log('假装向服务器请求是否可以加锁然后还通过了');
-        let selectedText = window.getSelection().toString();
-        let range;
-        try {
-          range = window.getSelection().getRangeAt(0);
-        } catch (e) {
-          console.error(e);
-          return;
+        //保存当前range
+        const selection = window.getSelection ? window.getSelection() : document.getSelection();
+        if (!selection.rangeCount) {
+          return
         }
-        const editArea = $(`<div id="editArea" contenteditable> ${selectedText}</div>`);
-        range.surroundContents(editArea[0]);
-        editArea[0].focus();
+        const content = this.$refs.content;
+        for (let i = 0; i < selection.rangeCount; i++) {
+          // 从selection中获取第一个Range对象
+          const range = selection.getRangeAt(0);
+          let start = range.startContainer;
+          let end = range.endContainer;
+          // 兼容IE11 node.contains(textNode) 永远 return false的bug
+          start = start.nodeType === Node.TEXT_NODE ? start.parentNode : start;
+          end = end.nodeType === Node.TEXT_NODE ? end.parentNode : end;
+          if (content.contains(start) && content.contains(end)) {
+            // Range对象被保存在this.range
+            this.range = range;
+            break
+          }
+        }
+        //转化当前区域为可编辑
+        console.log('假装向服务器请求是否可以加锁然后还通过了');
+        let editableArea = this.$refs.editableArea;
+        // let editableArea = document.createElement('div');
+        // editableArea.setAttribute('contenteditable', true);
+        // editableArea.setAttribute('ref', 'editableArea');
+        // editableArea.id = 'editableArea';
+        this.range.surroundContents(editableArea);
+        editableArea.focus();
         this.callBtn = false;
-        this.hasRange = true;
         this.trySaveCount = 0;
       },
       shareArticle() {
@@ -108,6 +128,7 @@
     created() {
     },
     mounted() {
+      console.log(this.$refs.content.__proto__);
       //todo 根据文章id获取文章content
       //。。。
 
@@ -134,7 +155,7 @@
 </script>
 
 <style lang="stylus">
-  #editArea
+  #editableArea
     display inline !important
     box-shadow 0 0 2px 2px deepskyblue
 </style>
@@ -158,7 +179,6 @@
     right 1em
     bottom 3em
     zoom 2
-
 
   #sub_btn_group
     position absolute

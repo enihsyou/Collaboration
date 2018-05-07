@@ -58,12 +58,15 @@
     //新建选取的情况
     console.log('省略了弹出并按加锁按钮的过程');
     console.log('假装向服务器请求是否可以加锁然后还通过了');
-    let selectedText = window.getSelection().toString();
-    let range = window.getSelection().getRangeAt(0);
-    editArea = $(`<div class="editArea" contenteditable> ${selectedText}</div>`);
-    range.surroundContents(editArea[0]);
-    editArea[0].focus();
+    console.log(saveCurrentRange());
+
+    // let selectedText = window.getSelection().toString();
+    // let range = window.getSelection().getRangeAt(0);
+    // editArea = $(`<div class="editArea" contenteditable> ${selectedText}</div>`);
+    // range.surroundContents(editArea[0]);
+    // editArea[0].focus();
   });
+
 </script>
 </body>
 </html>

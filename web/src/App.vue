@@ -11,6 +11,9 @@
 </script>
 
 <style lang="stylus">
+  [v-cloak]
+    display none
+
   html, body, #app
     width 100%
     height 100%
