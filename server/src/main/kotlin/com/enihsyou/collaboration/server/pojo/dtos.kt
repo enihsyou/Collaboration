@@ -1,4 +1,4 @@
-package com.enihsyou.collaboration.server.dto
+package com.enihsyou.collaboration.server.pojo
 
 class AccountLoginDTO
 
