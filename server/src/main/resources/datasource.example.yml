@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    username: enihsyou
+    password: enihsyou
+    url: jdbc:postgresql://localhost:5432/enihsyou?currentSchema=collaboration

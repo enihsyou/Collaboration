@@ -2,10 +2,10 @@ spring:
   profiles:
     active: dev
 
-  mvc:
-    message-codes-resolver-format: prefix_error_code
-    dispatch-trace-request: true
-    dispatch-options-request: true
+#  mvc:
+#    message-codes-resolver-format: prefix_error_code
+#    dispatch-trace-request: true
+#    dispatch-options-request: true
 
   jpa:
     hibernate:
@@ -26,11 +26,14 @@ spring:
       write_dates_as_timestamps: false
 
 server:
-  http2:
-    enabled: true
+  # 设置Gzip压缩
   compression:
     enabled: true
     min-response-size: 1024
+
+  # 设置API mapping的根路径
+  servlet:
+    context-path: /api
 
 ---
 spring:
@@ -60,6 +63,8 @@ logging:
 server:
   address: 127.0.0.1
   port: 8999
+  servlet:
+    context-path: /api
 
 ---
 spring:
@@ -83,3 +88,17 @@ logging:
     com.enihsyou: debug
   path: .
 
+---
+spring:
+  profiles: mysql
+  datasource:
+    username: enihsyou
+    password: enihsyou
+    url: jdbc:mysql://localhost:3306/collaboration?useSSL=false
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.MySQL57InnoDBDialect
+    hibernate:
+      ddl-auto: create

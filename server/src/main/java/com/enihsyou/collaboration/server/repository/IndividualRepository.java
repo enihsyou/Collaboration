@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface IndividualRepository extends JpaRepository<CoIndividual, Long> {
 
     @Nullable
-    CoIndividual queryByUsername(@NotNull final String username);
+    CoIndividual findByUsername(@NotNull final String username);
 }

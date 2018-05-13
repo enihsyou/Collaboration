@@ -1,9 +1,18 @@
 package com.enihsyou.collaboration.server.pojo
 
-class AccountLoginDTO
+class AccountLoginDTO(
+    val username: String,
+    val password: String
+)
 
 class AccountRegisteDTO
-class PasswordChangeDTO
+
+class PasswordChangeDTO(
+    val old_password: String,
+    val new_password: String
+)
+
+class AccountInfoChangeDTO
 
 class PasswordResetDTO
 
@@ -14,3 +23,12 @@ class CabinetUpdateDTO
 class PadCreateDTO
 
 class PadUpdateDTO
+
+
+//// Websocket DTOs
+class FetchPadDTO(
+
+)
+class LockPadDTO(
+
+)

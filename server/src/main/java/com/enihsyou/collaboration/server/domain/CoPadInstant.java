@@ -2,15 +2,14 @@ package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import java.time.LocalDateTime;
-import java.util.Collections;
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -20,14 +19,10 @@ import java.util.Set;
  * 不同用户可能会同时操作同一篇文稿
  */
 @Entity
-public class CoPadInstant {
-
-    @Id
-    @GeneratedValue
-    private long id;
+public class CoPadInstant extends AbstractPersistable<Long> {
 
     /** 这个状态属于哪个文稿 */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoPad belongTo = CoPad.DUMMY;
 
@@ -41,33 +36,16 @@ public class CoPadInstant {
     @NotNull private String body = "";
 
     /** 文章中每个用户的贡献区间 */
-    @OneToMany(mappedBy = "belongTo", fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "belongTo", orphanRemoval = true)
     @NotNull
-    private Set<CoBlame> contributes = Collections.emptySet();
+    private Set<CoBlame> contributes = new HashSet<>();
 
     /** 文稿的创建时间 */
-    @NotNull private LocalDateTime createdTime = LocalDateTime.now();
-
-    ////
-    // Constructors
-    ////
-
-    public CoPadInstant() {
-    }
-
-    public CoPadInstant(@NotNull final CoPad belongTo, @NotNull final String title, @NotNull final String body) {
-        this.belongTo = belongTo;
-        this.title = title;
-        this.body = body;
-    }
+    @NotNull private Instant createdTime = Instant.now();
 
     ////
     // Getter Setter
     ////
-
-    public long getId() {
-        return id;
-    }
 
     @NotNull
     public CoPad getBelongTo() {
@@ -120,11 +98,11 @@ public class CoPadInstant {
     }
 
     @NotNull
-    public LocalDateTime getCreatedTime() {
+    public Instant getCreatedTime() {
         return createdTime;
     }
 
-    public CoPadInstant setCreatedTime(@NotNull final LocalDateTime createdTime) {
+    public CoPadInstant setCreatedTime(@NotNull final Instant createdTime) {
         this.createdTime = createdTime;
         return this;
     }

@@ -6,6 +6,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 object PermissionUtils {
 
+    @JvmStatic
     fun currentAccount(): CoIndividual? = SecurityContextHolder.getContext().authentication?.details as? CoIndividual
+
+    @JvmStatic
     fun loggedAccount(): CoIndividual = currentAccount() ?: throw NeedLoginException()
 }

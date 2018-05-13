@@ -1,21 +1,18 @@
 package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.time.Instant;
 
 /** 一段属于用户贡献的位置范围 */
 @Entity
-public class CoBlame {
+public class CoBlame extends AbstractPersistable<Long> {
 
-    @Id
-    @GeneratedValue
-    private long id;
-
+    /** 拥有者 */
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoIndividual belongTo = CoIndividual.DUMMY;
@@ -26,26 +23,13 @@ public class CoBlame {
     /** 右端点，不包含 */
     private int right;
 
-    ////
-    // Constructors
-    ////
-
-    public CoBlame() {
-    }
-
-    public CoBlame(@NotNull final CoIndividual belongTo, final int left, final int right) {
-        this.belongTo = belongTo;
-        this.left = left;
-        this.right = right;
-    }
+    /** 贡献时间（创建时间） */
+    @NotNull
+    private Instant createdTime = Instant.now();
 
     ////
     // Getter Setter
     ////
-
-    public long getId() {
-        return id;
-    }
 
     @NotNull
     public CoIndividual getBelongTo() {
@@ -73,5 +57,15 @@ public class CoBlame {
     public CoBlame setRight(final int right) {
         this.right = right;
         return this;
+    }
+
+    @NotNull
+    public Instant getCreatedTime() {
+        return createdTime;
+    }
+
+    /** 当前🔒是否已过期 */
+    public boolean isExpired() {
+        return Instant.now().isAfter(createdTime);
     }
 }
