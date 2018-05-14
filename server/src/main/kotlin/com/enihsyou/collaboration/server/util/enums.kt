@@ -6,7 +6,10 @@ enum class DetailLevel(
     val string: String
 ) {
 
+    /**简要粒度*/
     BRIEF(DetailLevel.LEVEL_BRIEF),
+
+    /**详细粒度*/
     DETAIL(DetailLevel.LEVEL_DETAIL);
 
     companion object {
@@ -16,7 +19,7 @@ enum class DetailLevel(
         @JvmStatic
         fun parseLevel(string: String): DetailLevel {
             return try {
-                DetailLevel.valueOf(string)
+                DetailLevel.valueOf(string.takeIf { it.isNotBlank() } ?: DetailLevel.LEVEL_BRIEF)
             } catch (e: IllegalArgumentException) {
                 throw WrongArgumentException(string)
             }

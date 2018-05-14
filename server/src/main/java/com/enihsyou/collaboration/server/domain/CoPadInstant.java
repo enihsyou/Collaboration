@@ -19,21 +19,32 @@ import java.util.Set;
  * 不同用户可能会同时操作同一篇文稿
  */
 @Entity
-public class CoPadInstant extends AbstractPersistable<Long> {
+public class CoPadInstant extends AbstractPersistable<String> {
 
     /** 这个状态属于哪个文稿 */
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoPad belongTo = CoPad.DUMMY;
 
+    /**
+     * 这个状态是被谁创建的
+     * 如果是系统自动创建的，则此域为null
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Nullable
+    private CoIndividual createdBy;
+
     /** 为这个瞬时状态添加的标记 */
-    @Nullable private String tag;
+    @Nullable
+    private String tag;
 
     /** 文稿标题 */
-    @NotNull private String title = "";
+    @NotNull
+    private String title = "";
 
     /** 文稿主体 */
-    @NotNull private String body = "";
+    @NotNull
+    private String body = "";
 
     /** 文章中每个用户的贡献区间 */
     @OneToMany(mappedBy = "belongTo", orphanRemoval = true)
@@ -41,7 +52,8 @@ public class CoPadInstant extends AbstractPersistable<Long> {
     private Set<CoBlame> contributes = new HashSet<>();
 
     /** 文稿的创建时间 */
-    @NotNull private Instant createdTime = Instant.now();
+    @NotNull
+    private Instant createdTime = Instant.now();
 
     ////
     // Getter Setter

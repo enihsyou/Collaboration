@@ -27,11 +27,15 @@ public class CoIndividual extends AbstractPersistable<Long> {
     @NotNull
     private String password = "";
 
+    /** 用户邮箱地址，用来找回密码 */
+    @Nullable
+    private String emailAddress;
+
     /** 用户最后登录的时间 */
     @Nullable
     private Instant lastLoginTime;
 
-    /** 用户的文件柜*/
+    /** 用户的文件柜 */
     @OneToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoCabinet cabinet = CoCabinet.DUMMY;
@@ -60,5 +64,24 @@ public class CoIndividual extends AbstractPersistable<Long> {
         return this;
     }
 
+    @Nullable
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public CoIndividual setEmailAddress(@Nullable final String emailAddress) {
+        this.emailAddress = emailAddress;
+        return this;
+    }
+
+    @Nullable
+    public Instant getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public CoIndividual setLastLoginTime(@Nullable final Instant lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
+        return this;
+    }
 }
 

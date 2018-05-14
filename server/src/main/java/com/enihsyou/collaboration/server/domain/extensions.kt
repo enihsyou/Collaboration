@@ -10,7 +10,7 @@ fun CoIndividual.toLoginVO(): Any {
     return object {}
 }
 
-fun CoIndividual.toInfoVO(level: String = DetailLevel.LEVEL_BRIEF): Any {
+fun CoIndividual.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): Any {
     return object {}
 }
 
@@ -22,6 +22,30 @@ fun CoIndividual.toInfoChangeVO(): Any {
     return object {}
 }
 
-internal fun CoPad.getTitleImpl(): String {
+fun CoCabinet.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): Any {
+    return object {}
+}
+
+fun CoPad.toCreateVO(): Any {
+    return object {}
+}
+
+fun CoPad.toDetailVO(): Any {
+    return object {}
+}
+
+fun CoPad.toRevisionDetailVO(): Any {
+    return object {}
+}
+
+fun CoPadInstant.toInstantSavedVO(): Any {
+    return object {}
+}
+
+fun CoInviteLink.toCreateVO(): Any {
+    return object {}
+}
+
+fun CoPad.getTitleImpl(): String {
     return instants.sortedBy { it.createdTime }.lastOrNull()?.title ?: ""
 }
