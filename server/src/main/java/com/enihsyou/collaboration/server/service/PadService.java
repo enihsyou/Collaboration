@@ -10,15 +10,35 @@ import com.enihsyou.collaboration.server.util.ShareLevel;
 /** 处理文稿相关的逻辑 */
 public interface PadService {
 
-    /** 保存文稿的当前状态，创建一个历史记录 */
-    CoPadInstant saveInstant(long padId, PadSaveDTO padSaveDTO, CoIndividual account);
+    /**
+     * 保存文稿的当前状态，创建一个历史记录
+     *
+     * @param padId      目标文稿
+     * @param padSaveDTO 传来的所需参数
+     **/
+    CoPadInstant saveInstant(final long padId, final PadSaveDTO padSaveDTO);
 
-    /** 将文稿回滚到之前的一个历史记录状态 */
-    CoPad revertInstant(long padId, long revision, CoIndividual account);
+    /**
+     * 将文稿回滚到之前的一个历史记录状态
+     * * @param padId    目标文稿
+     *
+     * @param revision 目标版本号
+     */
+    CoPad revertInstant(final long padId, final long revision);
 
-    /** 以指定的暴露等级分享文档，创建分享链接 */
-    CoInviteLink sharePad(long padId, ShareLevel shareLevel, CoIndividual account);
+    /**
+     * 以指定的暴露等级分享文档，创建分享链接
+     *
+     * @param padId      创建分享链接的目标文稿
+     * @param shareLevel 期望的分享等级
+     */
+    CoInviteLink sharePad(final long padId, final ShareLevel shareLevel);
 
-    /** 使用令牌加入协同文档的编辑 */
-    CoPad joinPad(String token, CoIndividual account);
+    /**
+     * 已经登录的用户使用令牌加入协同文档的编辑
+     *
+     * @param token   提供的令牌
+     * @param account 正在进行加入的账户
+     */
+    CoPad joinPad(final String token, CoIndividual account);
 }

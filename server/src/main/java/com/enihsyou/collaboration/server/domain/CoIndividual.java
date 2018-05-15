@@ -40,6 +40,9 @@ public class CoIndividual extends AbstractPersistable<Long> {
     @NotNull
     private CoCabinet cabinet = CoCabinet.DUMMY;
 
+    /** 找回密码的凭据 */
+    @Nullable
+    private String resetPasswordToken;
     ////
     // Getter Setter
     ////
