@@ -15,6 +15,13 @@ class NeedLoginException : RestRuntimeException(100, "用户需要登录")
 
 class WrongArgumentException(vararg arguments: String) : RestRuntimeException(101, "[${arguments.joinToString()}]不正确")
 
+class UserExistException(username: String) : RestRuntimeException(102, "[$username] 已存在")
+
+class UserNotExistException(username: String) : RestRuntimeException(102, "[$username] 不存在")
+
+class PadNotExistException(padId:Long) : RestRuntimeException(102, "[$padId] 不存在")
+
+
 @RestControllerAdvice
 class GlobalControllerExceptionHandler {
 

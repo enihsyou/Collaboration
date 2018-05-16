@@ -50,10 +50,6 @@ fun CoInviteLink.toCreateVO(): Any {
     return object {}
 }
 
-fun CoPad.getTitleImpl(): String {
-    return instants.sortedBy { it.createdTime }.lastOrNull()?.title ?: ""
-}
-
 fun CoPad.socketPadFetchVO(): Any {
     return object {}
 }

@@ -38,10 +38,6 @@ public class CoPadInstant extends AbstractPersistable<String> {
     @Nullable
     private String tag;
 
-    /** 文稿标题 */
-    @NotNull
-    private String title = "";
-
     /** 文稿主体 */
     @NotNull
     private String body = "";
@@ -76,16 +72,6 @@ public class CoPadInstant extends AbstractPersistable<String> {
 
     public CoPadInstant setTag(@Nullable final String tag) {
         this.tag = tag;
-        return this;
-    }
-
-    @NotNull
-    public String getTitle() {
-        return title;
-    }
-
-    public CoPadInstant setTitle(@NotNull final String title) {
-        this.title = title;
         return this;
     }
 

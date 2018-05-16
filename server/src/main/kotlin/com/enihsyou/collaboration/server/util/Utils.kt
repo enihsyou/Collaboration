@@ -16,7 +16,7 @@ object PermissionUtils {
     private fun currentAccount(): CoIndividual? = authentication()?.details as? CoIndividual
 
     @Autowired
-    lateinit var cabinetRepository: CabinetRepository
+    lateinit var cabinetRepository: CabinetRepository // fixme
 
     @JvmStatic
     fun loggedAccount(): CoIndividual = currentAccount() ?: throw NeedLoginException()

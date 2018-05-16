@@ -1,53 +1,64 @@
 package com.enihsyou.collaboration.server.pojo
 
-class AccountLoginDTO(
-    val username: String,
-    val password: String
+private typealias Username = String
+private typealias Password = String
+private typealias EmailAddress = String
+private typealias DomainId = Long
+private typealias RevisionId = Long
+
+data class AccountLoginDTO(
+    val username: Username,
+    val password: Password
 )
 
-class AccountCreateDTO(
-    val username: String,
-    val password: String
+data class AccountCreateDTO(
+    val username: Username,
+    val password: Password
 )
 
-class PasswordChangeDTO(
-    val old_password: String,
-    val new_password: String
+data class PasswordChangeDTO(
+    val old_password: Password,
+    val new_password: Password
 )
 
-class AccountInfoChangeDTO(
+data class AccountInfoChangeDTO(
     /**用户的新邮件地址，null则取消原先的设定*/
-    val email_address: String?
+    val email_address: EmailAddress?
 )
 
-class PadCreateDTO(
+data class PadCreateDTO(
     val title: String
 )
 
-class PadUpdateDTO(
+data class PadUpdateDTO(
     val title: String
 )
 
-class PadSaveDTO(
+data class PadSaveDTO(
     val tag: String?
 )
 
 //// Websocket DTOs
-class FetchPadDTO(
-    val pad_id:Long,
-    val client_revision: Long
+data class FetchPadDTO(
+    val pad_id: DomainId,
+    val client_revision: RevisionId
 )
 
-class LockAcquireDTO(
-    val pad_id: Long,
-    val client_revision: Long,
+data class LockAcquireDTO(
+    val pad_id: DomainId,
+    val client_revision: RevisionId,
     val range: String
 )
 
-class LockReleaseDTO(
-    val pad_id: Long,
-    val client_revision: Long,
-    val lock_id: Long,
+data class LockReleaseDTO(
+    val pad_id: DomainId,
+    val client_revision: RevisionId,
+    val lock_id: DomainId,
     val modified: Boolean,
     val replace: String?
+)
+
+//// Program use
+data class DiffResult(
+    val from: String
 )

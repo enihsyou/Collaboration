@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component
 /**使用这个类进行用户名密码的验证*/
 @Component
 class IndividualAuthenticationProvider(
-   private val individualRepository: IndividualRepository,
-    val passwordEncoder: PasswordEncoder
+    private val individualRepository: IndividualRepository,
+    private val passwordEncoder: PasswordEncoder
 ) : AbstractUserDetailsAuthenticationProvider() {
 
     override fun retrieveUser(username: String, authentication: UsernamePasswordAuthenticationToken): UserDetails {
@@ -32,11 +32,14 @@ class IndividualAuthenticationProvider(
         val presentedPassword = authentication.credentials.toString()
 
         if (!passwordEncoder.matches(presentedPassword, userDetails.password)) {
-            logger.info("[${userDetails.username}]密码验证失败")
+            logger.info("[${userDetails.username}] 密码验证失败")
             throw BadCredentialsException(userDetails.username)
         }
         authentication.details = userDetails
     }
+
+    fun encodePassword(password: String): String =
+        passwordEncoder.encode(password)
 }
 
 class CoIndividualUserDetailsAdapter(

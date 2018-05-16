@@ -64,7 +64,6 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
             .setApplicationDestinationPrefixes("/app")
             /*发往这里的消息会被广播到所有订阅者那里*/
             .enableSimpleBroker("/topic")
-            .setHeartbeatValue(longArrayOf(10000, 10000))
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {

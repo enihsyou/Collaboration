@@ -27,6 +27,10 @@ public class CoPad extends AbstractPersistable<Long> {
     @NotNull
     private CoCabinet belongTo = CoCabinet.DUMMY;
 
+    /** 文稿标题 */
+    @NotNull
+    private String title = "";
+
     /** 拥有本文稿的其他文件柜，也就是协同合作参与人员 */
     @OneToMany(mappedBy = "pad", orphanRemoval = true)
     @NotNull
@@ -58,15 +62,21 @@ public class CoPad extends AbstractPersistable<Long> {
         return instants;
     }
 
-    public CoPad setInstants(@NotNull final Set<CoPadInstant> instants) {
-        this.instants = instants;
+    public CoPad addInstants(@NotNull final CoPadInstant instants) {
+        this.instants.add(instants);
+        instants.setBelongTo(this);
         return this;
     }
 
-    /** 文稿标题 */
     @NotNull
     public String getTitle() {
-        return ExtensionsKt.getTitleImpl(this);
+        return title;
+
+    }
+
+    public CoPad setTitle(@NotNull final String title) {
+        this.title = title;
+        return this;
     }
 
     @NotNull
@@ -74,9 +84,33 @@ public class CoPad extends AbstractPersistable<Long> {
         return locks;
     }
 
-    public CoPad setLocks(@NotNull final Set<CoLock> locks) {
+    public CoPad addLocks(@NotNull final Set<CoLock> locks) {
         this.locks = locks;
         return this;
     }
 
+    @NotNull
+    public CoCabinet getBelongTo() {
+        return belongTo;
+    }
+
+    public CoPad setBelongTo(@NotNull final CoCabinet belongTo) {
+        this.belongTo = belongTo;
+        return this;
+    }
+
+    @NotNull
+    public Set<CoPadControlBlock> getCabinets() {
+        return cabinets;
+    }
+
+    public CoPad addCabinets(@NotNull final Set<CoPadControlBlock> cabinets) {
+        this.cabinets = cabinets;
+        return this;
+    }
+
+    @NotNull
+    public Instant getCreatedTime() {
+        return createdTime;
+    }
 }

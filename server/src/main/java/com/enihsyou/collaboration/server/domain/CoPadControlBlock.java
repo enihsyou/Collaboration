@@ -96,6 +96,21 @@ public class CoPadControlBlock {
         Long cabinet;
 
         Long pad;
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            final PK pk = (PK) o;
+            return Objects.equals(cabinet, pk.cabinet) &&
+                   Objects.equals(pad, pk.pad);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(cabinet, pad);
+        }
     }
 }
 

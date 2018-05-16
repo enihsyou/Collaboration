@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
@@ -36,7 +37,7 @@ public class CoIndividual extends AbstractPersistable<Long> {
     private Instant lastLoginTime;
 
     /** 用户的文件柜 */
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @NotNull
     private CoCabinet cabinet = CoCabinet.DUMMY;
 
@@ -84,6 +85,31 @@ public class CoIndividual extends AbstractPersistable<Long> {
 
     public CoIndividual setLastLoginTime(@Nullable final Instant lastLoginTime) {
         this.lastLoginTime = lastLoginTime;
+        return this;
+    }
+
+    @NotNull
+    public Instant getCreatedTime() {
+        return createdTime;
+    }
+
+    @NotNull
+    public CoCabinet getCabinet() {
+        return cabinet;
+    }
+
+    public CoIndividual setCabinet(@NotNull final CoCabinet cabinet) {
+        this.cabinet = cabinet;
+        return this;
+    }
+
+    @Nullable
+    public String getResetPasswordToken() {
+        return resetPasswordToken;
+    }
+
+    public CoIndividual setResetPasswordToken(@Nullable final String resetPasswordToken) {
+        this.resetPasswordToken = resetPasswordToken;
         return this;
     }
 }
