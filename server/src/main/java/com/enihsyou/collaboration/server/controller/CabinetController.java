@@ -1,72 +1,61 @@
 package com.enihsyou.collaboration.server.controller;
 
-import com.enihsyou.collaboration.server.domain.CoCabinet;
-import com.enihsyou.collaboration.server.domain.CoIndividual;
-import com.enihsyou.collaboration.server.domain.CoInviteLink;
-import com.enihsyou.collaboration.server.domain.CoPad;
-import com.enihsyou.collaboration.server.domain.CoPadInstant;
-import com.enihsyou.collaboration.server.domain.ExtensionsKt;
+import com.enihsyou.collaboration.server.domain.*;
 import com.enihsyou.collaboration.server.pojo.PadCreateDTO;
 import com.enihsyou.collaboration.server.pojo.PadSaveDTO;
 import com.enihsyou.collaboration.server.pojo.PadUpdateDTO;
 import com.enihsyou.collaboration.server.pojo.RestResponse;
-import com.enihsyou.collaboration.server.service.CabinetService;
 import com.enihsyou.collaboration.server.service.PadService;
+import com.enihsyou.collaboration.server.service.PermissionService;
+import com.enihsyou.collaboration.server.service.PermissionUtil;
 import com.enihsyou.collaboration.server.util.DetailLevel;
-import com.enihsyou.collaboration.server.util.PermissionUtils;
 import com.enihsyou.collaboration.server.util.ShareLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 
 /** 用户文稿集合管理的相关控制器 */
 @RestController
-@RequestMapping("cabinet")
+@RequestMapping("pads")
 public class CabinetController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CabinetController.class);
 
-    private final CabinetService cabinetService;
+    private final PermissionService permissionService;
 
     private final PadService padService;
 
-    public CabinetController(final CabinetService cabinetService, final PadService padService) {
-        this.cabinetService = cabinetService;
+    public CabinetController(final PermissionService permissionService, final PadService padService) {
+        this.permissionService = permissionService;
         this.padService = padService;
     }
 
     /** 获取用户文件柜的最新状态 */
     @GetMapping
-    public RestResponse detailCabinet(
-        @RequestParam(required = false, defaultValue = DetailLevel.LEVEL_BRIEF) String level
-    ) {
-        LOGGER.debug("刷新文件柜状态 [{}] detail level: {}", PermissionUtils.currentUsername(), level);
+    public RestResponse detailCabinet(@RequestParam(required = false,
+        defaultValue = DetailLevel.LEVEL_BRIEF) String level) {
+        LOGGER.debug("刷新文件柜状态 [{}] detail level: {}", PermissionUtil.currentUsername(), level);
 
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
         DetailLevel detailLevel = DetailLevel.parseLevel(level);
 
-        CoCabinet cabinet = cabinetService.fetchCabinet(account);
+        final Set<CoPadControlBlock> pads = padService.listPads(account);
 
-        return RestResponse.ok(ExtensionsKt.toDetailVO(cabinet, detailLevel));
+        return RestResponse.ok(ExtensionsKt.toDetailVO(pads, detailLevel));
     }
 
     /** 用户创建一篇新文稿 */
-    @PostMapping("pads")
+    @PostMapping
     public RestResponse createPad(@RequestBody PadCreateDTO padCreateDTO) {
-        LOGGER.debug("创建新文稿 [{}] title: {}", PermissionUtils.currentUsername(), padCreateDTO.getTitle());
+        LOGGER.debug("创建新文稿 [{}] title: {}", PermissionUtil.currentUsername(), padCreateDTO.getTitle());
 
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
-        final CoPad pad = cabinetService.createPad(padCreateDTO, account);
+        final CoPad pad = padService.createPad(padCreateDTO, account);
 
         return RestResponse.ok(ExtensionsKt.toCreateVO(pad));
     }
@@ -77,17 +66,34 @@ public class CabinetController {
      *
      * @param padId 修改的目标id号
      */
-    @PutMapping("pads/{padId}")
+    @PutMapping("{padId}")
     public RestResponse updatePad(@PathVariable long padId, @RequestBody PadUpdateDTO padUpdateDTO) {
-        final String username = PermissionUtils.currentUsername();
-        LOGGER.debug("更新文稿信息 [{}] #{} new title: {}",
-            username, padId, padUpdateDTO.getTitle());
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("更新文稿信息 [{}] #{} new title: {}", username, padId, padUpdateDTO.getTitle());
 
-        PermissionUtils.checkOwnership(padId, username);
+        permissionService.checkOwnership(padId, username);
 
-        final CoPad pad = cabinetService.updatePad(padId, padUpdateDTO);
+        final CoPad pad = padService.updatePad(padId, padUpdateDTO);
 
         return RestResponse.ok(ExtensionsKt.toCreateVO(pad));
+    }
+
+    /**
+     * 用户删除一篇文稿
+     * 需要管理权限
+     *
+     * @param padId 删除的目标id号
+     */
+    @DeleteMapping("{padId}")
+    public RestResponse deletePad(@PathVariable Long padId) {
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("删除文稿 [{}] #{}", username, padId);
+
+        permissionService.checkOwnership(padId, username);
+
+        padService.deletePad(padId);
+
+        return RestResponse.ok();
     }
 
     /**
@@ -97,14 +103,14 @@ public class CabinetController {
      *
      * @param padId 想要预览的文稿id号
      */
-    @GetMapping("pads/{padId}")
+    @GetMapping("{padId}")
     public RestResponse previewPad(@PathVariable long padId) {
-        final String username = PermissionUtils.currentUsername();
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("预览文稿 [{}] #{}", username, padId);
 
-        PermissionUtils.checkCoopship(padId, username);
+        permissionService.checkCoopship(padId, username);
 
-        final CoPad pad = cabinetService.fetchPad(padId);
+        final CoPad pad = padService.fetchPad(padId);
 
         return RestResponse.ok(ExtensionsKt.toDetailVO(pad));
     }
@@ -115,14 +121,14 @@ public class CabinetController {
      *
      * @param padId 对应的文档id
      */
-    @GetMapping("pads/{padId}/revisions")
-    public RestResponse fetchPadRevisions(@PathVariable long padId) {
-        final String username = PermissionUtils.currentUsername();
-        LOGGER.debug("获取文稿历史状态 [{}] #{}", username, padId);
+    @GetMapping("{padId}/revisions/{revisionId}")
+    public RestResponse fetchPadRevisions(@PathVariable long padId, @PathVariable String revisionId) {
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("获取文稿历史状态 [{}] pad: #{} revision: #{}", username, padId, revisionId);
 
-        PermissionUtils.checkCoopship(padId, username);
+        permissionService.checkCoopship(padId, username);
 
-        final CoPad pad = cabinetService.fetchPad(padId);
+        final CoPadInstant pad = padService.fetchRevision(padId, revisionId);
 
         return RestResponse.ok(ExtensionsKt.toRevisionDetailVO(pad));
     }
@@ -134,15 +140,16 @@ public class CabinetController {
      * @param padId      想要进行保存历史版本的文稿id号
      * @param padSaveDTO 保存时需要用户提供的信息
      */
-    @PutMapping("pads/{padId}/revisions")
+    @PutMapping("{padId}/revisions")
     public RestResponse savePadInstant(@PathVariable long padId, @RequestBody PadSaveDTO padSaveDTO) {
-        final String username = PermissionUtils.currentUsername();
-        LOGGER.debug("保存文稿历史状态 [{}] pad: #{} revision: #{} tag: {}",
-            username, padId, padSaveDTO.getTag());
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("保存文稿历史状态 [{}] pad: #{} revision: #{} tag: {}", username, padId, padSaveDTO.getTag());
 
-        PermissionUtils.checkCoopship(padId, username);
+        permissionService.checkCoopship(padId, username);
 
-        final CoPadInstant instant = padService.saveInstant(padId, padSaveDTO);
+        final CoIndividual account = permissionService.loggedAccount();
+
+        final CoPadInstant instant = padService.saveInstant(padId, padSaveDTO, account);
 
         return RestResponse.ok(ExtensionsKt.toInstantSavedVO(instant));
     }
@@ -155,12 +162,12 @@ public class CabinetController {
      * @param padId    想要进行回滚的文稿id号
      * @param revision 目标的回滚版本号
      */
-    @PostMapping("pads/{padId}/revisions")
-    public RestResponse revertPadInstant(@PathVariable long padId, @RequestParam long revision) {
-        final String username = PermissionUtils.currentUsername();
+    @PostMapping("{padId}/revisions")
+    public RestResponse revertPadInstant(@PathVariable long padId, @RequestParam String revision) {
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("回滚文稿状态 [{}] pad: #{} revision: #{}", username, padId, revision);
 
-        PermissionUtils.checkOwnership(padId, username);
+        permissionService.checkOwnership(padId, username);
 
         final CoPad pad = padService.revertInstant(padId, revision);
 
@@ -174,12 +181,12 @@ public class CabinetController {
      * @param padId 需要分享的文稿id号
      * @param level 创建出来的分享链接的分享等级
      */
-    @PostMapping("pads/{padId}/share")
+    @PostMapping("{padId}/share")
     public RestResponse sharePad(@PathVariable long padId, @RequestParam String level) {
-        final String username = PermissionUtils.currentUsername();
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("分享文稿 [{}] #{} share level: {}", username, padId, level);
 
-        PermissionUtils.checkOwnership(padId, username);
+        permissionService.checkOwnership(padId, username);
 
         ShareLevel shareLevel = ShareLevel.parseLevel(level);
 
@@ -195,12 +202,31 @@ public class CabinetController {
      */
     @PostMapping("join")
     public RestResponse joinPad(@RequestParam String token) {
-        LOGGER.debug("加入文稿 [{}] token: {}", PermissionUtils.currentUsername(), token);
+        LOGGER.debug("加入文稿 [{}] token: {}", PermissionUtil.currentUsername(), token);
 
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
         final CoPad pad = padService.joinPad(token, account);
 
         return RestResponse.ok(ExtensionsKt.toDetailVO(pad));
+    }
+
+    /**
+     * 移除分享对象
+     * 需要管理权限
+     *
+     * @param padId  需要分享的文稿id号
+     * @param target 想要移除的对象
+     */
+    @DeleteMapping("{padId}/share")
+    public RestResponse revokeToken(@PathVariable long padId, @RequestParam String target) {
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("移除分享对象 [{}] #{} target: {}", username, padId, target);
+
+        permissionService.checkOwnership(padId, username);
+
+        padService.revokeShare(padId, target);
+
+        return RestResponse.ok();
     }
 }

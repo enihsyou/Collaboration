@@ -8,14 +8,16 @@ import com.enihsyou.collaboration.server.pojo.FetchPadDTO;
 import com.enihsyou.collaboration.server.pojo.LockAcquireDTO;
 import com.enihsyou.collaboration.server.pojo.LockReleaseDTO;
 import com.enihsyou.collaboration.server.pojo.RestResponse;
+import com.enihsyou.collaboration.server.service.PermissionUtil;
 import com.enihsyou.collaboration.server.service.WebsocketService;
-import com.enihsyou.collaboration.server.util.PermissionUtils;
+import com.enihsyou.collaboration.server.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /** 处理前后端在文档和🔒更新上的交互 */
@@ -24,25 +26,30 @@ public class WebsocketController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebsocketController.class);
 
+    private final PermissionService permissionService;
+
     private final WebsocketService websocketService;
 
     private final SimpMessageSendingOperations template;
 
     public WebsocketController(
+        final PermissionService permissionService,
         final WebsocketService websocketService, final SimpMessageSendingOperations template
     ) {
+        this.permissionService = permissionService;
         this.websocketService = websocketService;
         this.template = template;
     }
 
     /** 刷新获取最新状态 */
     @MessageMapping("pad.fetch")
+    @PostMapping("websocket.pad.fetch")
     public void fetchPadStatus(@RequestBody FetchPadDTO fetchPadDTO) {
-        final String username = PermissionUtils.currentUsername();
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("获取文稿状态 [{}] pad: #{} revision: {}",
             username, fetchPadDTO.getPad_id(), fetchPadDTO.getClient_revision());
 
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
         CoPad pad = websocketService.fetchStatus(fetchPadDTO);
 
@@ -53,11 +60,11 @@ public class WebsocketController {
     /** 申请🔒 */
     @MessageMapping("pad.lock.acquire")
     public void acquirePadLock(@RequestBody LockAcquireDTO lockAcquireDTO) {
-        final String username = PermissionUtils.currentUsername();
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("尝试获取文稿🔒 [{}] pad: #{} revision: {} range: {}",
             username, lockAcquireDTO.getPad_id(), lockAcquireDTO.getClient_revision(), lockAcquireDTO.getRange());
 
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
         CoLock lock = websocketService.acquireLock(lockAcquireDTO, account);
 
@@ -68,11 +75,11 @@ public class WebsocketController {
     /** 释放🔒 */
     @MessageMapping("pad.lock.release")
     public void releasePadLock(@RequestBody LockReleaseDTO lockReleaseDTO) {
-        final String username = PermissionUtils.currentUsername();
+        final String username = PermissionUtil.currentUsername();
         LOGGER.debug("释放文稿🔒 [{}] pad: #{} revision: {} lock_id: {} modified: {}",
             username, lockReleaseDTO.getPad_id(), lockReleaseDTO.getClient_revision(), lockReleaseDTO.getLock_id(),
             lockReleaseDTO.getModified());
-        final CoIndividual account = PermissionUtils.loggedAccount();
+        final CoIndividual account = permissionService.loggedAccount();
 
         CoPad pad = websocketService.releaseLock(lockReleaseDTO, account);
 

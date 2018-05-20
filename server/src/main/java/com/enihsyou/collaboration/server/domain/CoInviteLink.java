@@ -2,14 +2,13 @@ package com.enihsyou.collaboration.server.domain;
 
 import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 /**
  * 邀请链接
@@ -25,8 +24,8 @@ public class CoInviteLink {
     private String token = "";
 
     /** 被邀请的人 */
-    @NotNull
-    private String invitee = "";
+    @Nullable
+    private String invitee;
 
     /** 被邀请者加入的文稿[CoPad] */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,18 +39,33 @@ public class CoInviteLink {
 
     /** 这个邀请链接的创建时间 */
     @NotNull
-    private LocalDateTime createdTime = LocalDateTime.now();
+    private Instant createdTime = Instant.now();
 
     /** 这个邀请链接过期的时间，重复邀请会延长寿命 */
     @NotNull
-    private LocalDateTime expiredTime = createdTime.plusDays(1);
+    private Instant expiredTime = createdTime.plus(1, ChronoUnit.DAYS);
+
+
+    ////
+    // Functions
+    ////
+
+    public boolean isTargeted(String username) {
+        if (invitee == null) return true;
+        return Objects.equals(invitee, username);
+    }
+
+    public boolean isExpired() {
+        return permission == CoLinkStatus.REVOKED || expiredTime.isAfter(Instant.now());
+    }
+
 
     ////
     // Getter Setter
     ////
 
     /** 发起邀请的人 */
-    public CoCabinet getInviter() {
+    public CoIndividual getInviter() {
         throw new NotImplementedError();
     }
 
@@ -65,7 +79,7 @@ public class CoInviteLink {
         return this;
     }
 
-    @NotNull
+    @Nullable
     public String getInvitee() {
         return invitee;
     }
@@ -97,21 +111,11 @@ public class CoInviteLink {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public CoInviteLink setCreatedTime(@NotNull final LocalDateTime createdTime) {
-        this.createdTime = createdTime;
-        return this;
+        return LocalDateTime.from(createdTime);
     }
 
     @NotNull
     public LocalDateTime getExpiredTime() {
-        return expiredTime;
-    }
-
-    public CoInviteLink setExpiredTime(@NotNull final LocalDateTime expiredTime) {
-        this.expiredTime = expiredTime;
-        return this;
+        return LocalDateTime.from(expiredTime);
     }
 }

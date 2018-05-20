@@ -6,6 +6,7 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -43,18 +44,22 @@ class IndividualAuthenticationProvider(
 }
 
 class CoIndividualUserDetailsAdapter(
-    val account: CoIndividual
+    account: CoIndividual
 ) : UserDetails {
 
-    override fun getAuthorities(): MutableCollection<out GrantedAuthority> = mutableSetOf()
+    private val username = account.username
+    private val password = account.password
+
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
+        mutableSetOf(SimpleGrantedAuthority("ROLE_USER"))
 
     override fun isEnabled(): Boolean = true
 
-    override fun getUsername(): String = account.username
+    override fun getUsername(): String = username
 
     override fun isCredentialsNonExpired(): Boolean = true
 
-    override fun getPassword(): String = account.password
+    override fun getPassword(): String = password
 
     override fun isAccountNonExpired(): Boolean = true
 

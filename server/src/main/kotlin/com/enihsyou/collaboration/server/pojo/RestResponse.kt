@@ -16,6 +16,7 @@ open class RestResponse(
 
     companion object {
         @JvmStatic
+        @JvmOverloads
         fun ok(data: Any? = null) = RestResponse(ResponseCode.OK, data)
     }
 }

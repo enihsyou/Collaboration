@@ -5,12 +5,16 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.enihsyou.collaboration.server.domain.CoPad.DUMMY;
+import static java.time.Instant.now;
+import static javax.persistence.FetchType.LAZY;
 
 /**
  * 独立的一篇文稿的瞬时状态
@@ -22,17 +26,17 @@ import java.util.Set;
 public class CoPadInstant extends AbstractPersistable<String> {
 
     /** 这个状态属于哪个文稿 */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @NotNull
-    private CoPad belongTo = CoPad.DUMMY;
+    private CoPad belongTo = DUMMY;
 
     /**
      * 这个状态是被谁创建的
      * 如果是系统自动创建的，则此域为null
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Nullable
-    private CoIndividual createdBy;
+    @ManyToOne(fetch = LAZY)
+    @NotNull
+    private CoIndividual createdBy = CoIndividual.DUMMY;
 
     /** 为这个瞬时状态添加的标记 */
     @Nullable
@@ -49,7 +53,7 @@ public class CoPadInstant extends AbstractPersistable<String> {
 
     /** 文稿的创建时间 */
     @NotNull
-    private Instant createdTime = Instant.now();
+    private Instant createdTime = now();
 
     ////
     // Getter Setter
@@ -96,12 +100,17 @@ public class CoPadInstant extends AbstractPersistable<String> {
     }
 
     @NotNull
-    public Instant getCreatedTime() {
-        return createdTime;
+    public LocalDateTime getCreatedTime() {
+        return LocalDateTime.from(createdTime);
     }
 
-    public CoPadInstant setCreatedTime(@NotNull final Instant createdTime) {
-        this.createdTime = createdTime;
+    @NotNull
+    public CoIndividual getCreatedBy() {
+        return createdBy;
+    }
+
+    public CoPadInstant setCreatedBy(@NotNull final CoIndividual createdBy) {
+        this.createdBy = createdBy;
         return this;
     }
 }

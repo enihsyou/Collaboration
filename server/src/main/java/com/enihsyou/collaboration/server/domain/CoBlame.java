@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 /** 一段属于用户贡献的位置范围 */
 @Entity
@@ -60,12 +61,7 @@ public class CoBlame extends AbstractPersistable<Long> {
     }
 
     @NotNull
-    public Instant getCreatedTime() {
-        return createdTime;
-    }
-
-    /** 当前🔒是否已过期 */
-    public boolean isExpired() {
-        return Instant.now().isAfter(createdTime);
+    public LocalDateTime getCreatedTime() {
+        return LocalDateTime.from(createdTime);
     }
 }

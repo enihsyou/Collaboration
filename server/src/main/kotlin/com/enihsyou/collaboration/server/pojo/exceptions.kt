@@ -1,5 +1,6 @@
 package com.enihsyou.collaboration.server.pojo
 
+import com.enihsyou.collaboration.server.domain.CoPad
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -11,16 +12,35 @@ abstract class RestRuntimeException(
     val data: Any? = null
 ) : RuntimeException(msg)
 
-class NeedLoginException : RestRuntimeException(100, "用户需要登录")
+class NeedLoginException :
+    RestRuntimeException(100, "用户需要登录")
 
-class WrongArgumentException(vararg arguments: String) : RestRuntimeException(101, "[${arguments.joinToString()}]不正确")
+class WrongArgumentException(vararg arguments: String) :
+    RestRuntimeException(101, "参数[${arguments.joinToString()}]不正确")
 
-class UserExistException(username: String) : RestRuntimeException(102, "[$username] 已存在")
+class UserExistException(username: String) :
+    RestRuntimeException(102, "用户名 [$username] 已存在")
 
-class UserNotExistException(username: String) : RestRuntimeException(102, "[$username] 不存在")
+class UserNotExistException(username: String) :
+    RestRuntimeException(201, "用户名 [$username] 不存在")
 
-class PadNotExistException(padId:Long) : RestRuntimeException(102, "[$padId] 不存在")
+class PadNotExistException(padId: Long) :
+    RestRuntimeException(202, "文稿 [$padId] 不存在")
 
+class InstantNotExistException(padId: Long, revisionId: String) :
+    RestRuntimeException(203, "历史记录 [$padId#$revisionId] 不存在")
+
+class InviteLinkNotExistException(token: String) :
+    RestRuntimeException(204, "邀请链接 [$token] 不存在")
+
+class PadLockedException(pad: CoPad) :
+    RestRuntimeException(301, "文稿 #${pad.id}-[${pad.title}] 锁定中")
+
+class InviteLinkNotTargetedException(username: String) :
+    RestRuntimeException(302, "邀请链接不给 [$username] 用")
+
+class InviteLinkHasExpiredException(token: String) :
+    RestRuntimeException(303, "邀请链接 [$token] 已失效")
 
 @RestControllerAdvice
 class GlobalControllerExceptionHandler {

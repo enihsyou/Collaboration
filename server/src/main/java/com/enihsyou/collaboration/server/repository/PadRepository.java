@@ -20,3 +20,4 @@ public interface PadRepository extends JpaRepository<CoPad, Long> {
         return findById(padId).orElseThrow(() -> new PadNotExistException(padId));
     }
 }
+

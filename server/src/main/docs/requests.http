@@ -1,1 +1,158 @@
-GET http://{{host}}
+// 注册
+POST http://{{host}}/account
+Content-Type: application/json
+
+< request/user.json
+
+###
+
+// 登录
+POST http://{{host}}/account/login
+Content-Type: application/json
+
+< request/user.json
+
+> {% client.global.set("cookie", response.headers.valueOf("Set-Cookie")) %}
+###
+
+// 获取账户信息1
+// 可选参数 level = [brief | detail]
+GET http://{{host}}/account?level=brief
+Cookie: {{cookie}}
+###
+GET http://{{host}}/account?level=detail
+Cookie: {{cookie}}
+###
+
+// 修改账户信息
+PUT http://{{host}}/account
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{
+  "email": "aaa@a.com"
+}
+###
+// 修改账户密码
+POST http://{{host}}/account/password
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{
+  "old_password": "111",
+  "new_password": "112"
+}
+
+
+
+
+###
+// 获取文件柜最新状态
+// 可选参数 level = [brief | detail]
+GET http://{{host}}/pads?level=brief
+Cookie: {{cookie}}
+###
+GET http://{{host}}/pads?level=detail
+Cookie: {{cookie}}
+
+
+###
+// 创建一篇新文稿
+POST http://{{host}}/pads
+Content-Type: application/json
+Cookie: {{cookie}}
+
+< request/create_pad.json
+
+> {% client.global.set("pad_id", response.body.data.pad_id)%}
+
+
+###
+// 修改文稿信息
+PUT http://{{host}}/pads/{{pad_id}}
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{
+  "title": "This is not a title."
+}
+
+
+###
+// 删除文稿
+DELETE http://{{host}}/pads/{{pad_id}}
+Cookie: {{cookie}}
+
+
+###
+// 获取文稿详情、预览文稿
+GET http://{{host}}/pads/{{pad_id}}
+Cookie: {{cookie}}
+
+
+###
+// 保存文稿历史记录
+PUT http://{{host}}/pads/{{pad_id}}/revisions
+Content-Type: application/json
+Cookie: {{cookie}}
+
+< request/instant_create.json
+
+> {% client.global.set("pad_id", response.body.data.revision_id)%}
+
+
+###
+// 获取文稿历史记录详情
+GET http://{{host}}/pads/{{pad_id}}/revisions/{{revision_id}}
+Cookie: {{cookie}}
+
+
+###
+// 回滚文稿历史记录
+POST http://{{host}}/pads/{{pad_id}}/revisions?revision=dfh387dv
+Cookie: {{cookie}}
+
+
+###
+// 分享文稿
+// level = [edit | view]
+POST http://{{host}}/pads/{{pad_id}}/share?level=edit
+Cookie: {{cookie}}
+
+###
+// 加入文稿
+POST http://{{host}}/pads/join?token=fjdkslfaj
+Cookie: {{cookie}}
+
+###
+// 移出合作者
+DELETE http://{{host}}/pads/{{pad_id}}/share?target=username
+Cookie: {{cookie}}
+
+
+
+###
+// Websocket Part
+// todo
+
+// refresh lock status
+POST http://{{host}}/websocket.pad.fetch
+Content-Type: application/json
+Cookie: {{cookie}}
+
+< request/ws_pad_fetch.json
+###
+
+// acquire lock
+POST http://{{host}}/websocket.pad.lock.acquire
+Content-Type: application/json
+Cookie: {{cookie}}
+
+< request/ws_lock_acquire.json
+###
+// release lock
+POST http://{{host}}/websocket.pad.lock.release
+Content-Type: application/json
+Cookie: {{cookie}}
+
+< request/ws_lock_release.json

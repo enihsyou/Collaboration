@@ -4,11 +4,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.time.Instant.now;
 
 /** 代表每个用户的具体信息 */
 @Entity
@@ -18,7 +21,7 @@ public class CoIndividual extends AbstractPersistable<Long> {
 
     /** 用户注册的时间 */
     @NotNull
-    private final Instant createdTime = Instant.now();
+    private final Instant createdTime = now();
 
     /** 用户登录名 */
     @NotNull
@@ -32,18 +35,18 @@ public class CoIndividual extends AbstractPersistable<Long> {
     @Nullable
     private String emailAddress;
 
-    /** 用户最后登录的时间 */
-    @Nullable
-    private Instant lastLoginTime;
-
-    /** 用户的文件柜 */
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    /**
+     * 用户的文件柜里面存有的文档集合
+     * 用来存放用户拥有的所有文档，包括创建的和被邀请合作的
+     */
+    @OneToMany(mappedBy = "individual", orphanRemoval = true)
     @NotNull
-    private CoCabinet cabinet = CoCabinet.DUMMY;
+    private Set<CoPadControlBlock> pads = new HashSet<>();
 
     /** 找回密码的凭据 */
     @Nullable
     private String resetPasswordToken;
+
     ////
     // Getter Setter
     ////
@@ -78,29 +81,19 @@ public class CoIndividual extends AbstractPersistable<Long> {
         return this;
     }
 
-    @Nullable
-    public Instant getLastLoginTime() {
-        return lastLoginTime;
+    @NotNull
+    public Set<CoPadControlBlock> getPads() {
+        return pads;
     }
 
-    public CoIndividual setLastLoginTime(@Nullable final Instant lastLoginTime) {
-        this.lastLoginTime = lastLoginTime;
+    public CoIndividual addPad(@NotNull final CoPadControlBlock pads) {
+        this.pads.add(pads);
         return this;
     }
 
     @NotNull
-    public Instant getCreatedTime() {
-        return createdTime;
-    }
-
-    @NotNull
-    public CoCabinet getCabinet() {
-        return cabinet;
-    }
-
-    public CoIndividual setCabinet(@NotNull final CoCabinet cabinet) {
-        this.cabinet = cabinet;
-        return this;
+    public LocalDateTime getCreatedTime() {
+        return LocalDateTime.from(createdTime);
     }
 
     @Nullable

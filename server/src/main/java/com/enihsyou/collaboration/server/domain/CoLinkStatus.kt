@@ -1,6 +1,8 @@
 package com.enihsyou.collaboration.server.domain
 
 enum class CoLinkStatus {
+    /**用户拥有这篇文稿*/
+    OWN,
 
     /**用户能查看文稿*/
     CAN_VIEW,

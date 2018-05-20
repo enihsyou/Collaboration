@@ -4,18 +4,22 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
+import java.time.LocalDateTime;
+
+import static com.enihsyou.collaboration.server.domain.CoIndividual.DUMMY;
+import static java.time.Instant.now;
+import static javax.persistence.FetchType.LAZY;
 
 /** 一段被🔒锁定的文字范围 */
 @Entity
 public class CoLock extends AbstractPersistable<Long> {
 
-    /** 拥有者*/
-    @ManyToOne(fetch = FetchType.LAZY)
+    /** 拥有者 */
+    @ManyToOne(fetch = LAZY)
     @NotNull
-    private CoIndividual belongTo = CoIndividual.DUMMY;
+    private CoIndividual belongTo = DUMMY;
 
     /** 左端点，包含 */
     private int left;
@@ -25,7 +29,7 @@ public class CoLock extends AbstractPersistable<Long> {
 
     /** 锁定时间（创建时间） */
     @NotNull
-    private Instant createdTime = Instant.now();
+    private Instant createdTime = now();
 
     ////
     // Getter Setter
@@ -60,13 +64,13 @@ public class CoLock extends AbstractPersistable<Long> {
     }
 
     @NotNull
-    public Instant getCreatedTime() {
-        return createdTime;
+    public LocalDateTime getCreatedTime() {
+        return LocalDateTime.from(createdTime);
     }
 
     /** 当前🔒是否已过期 */
     public boolean isExpired() {
-        return Instant.now().isAfter(createdTime);
+        return now().isAfter(createdTime);
     }
 }
 
