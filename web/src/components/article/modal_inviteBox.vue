@@ -24,7 +24,7 @@
     <div class="invite-item inviteLink">
       <p class="title">通过链接邀请：</p>
       <el-tooltip class="item" effect="dark" content="复制到剪贴板" placement="right">
-        <el-input v-model="inviteLink" readonly>
+        <el-input ref="shareLink" v-model="inviteLink" readonly>
           <el-button slot="append" size="small" icon="el-icon-document"
                      @click="copyLink"></el-button>
         </el-input>
@@ -92,7 +92,13 @@
     },
     methods: {
       copyLink() {
-        console.log('copyLink!');
+        if (document.execCommand) {
+          this.$refs.shareLink.select();
+          document.execCommand("copy");
+          this.$message.success('复制到剪贴板成功。')
+        } else {
+          this.$message.error('复制到剪贴板失败，请自行选择复制。')
+        }
       },
       querySearch(queryString, expendList) {
         const res = [];

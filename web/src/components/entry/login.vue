@@ -47,7 +47,8 @@
                         </span>
                     </span>
             </button>
-            <router-link to="/forgot">忘记密码</router-link>
+            <router-link to="/register">注册新用户</router-link>
+            <!--<router-link to="/forgot">忘记密码</router-link>-->
         </div>
     </div>
 </template>
@@ -73,51 +74,27 @@
       },
       submit() {
         if (this.$.isEmpty(this.username)) {
-          this.$Message.error('账户名不能为空');
+          this.$message.error('账户名不能为空');
           return;
         }
         if (this.$.isEmpty(this.password)) {
-          this.$Message.error('密码不能为空');
+          this.$message.error('密码不能为空');
           return;
         }
         if (this.isSent) return;
-        this.$.ajax.post('/user/login', JSON.stringify({
+        this.$.ajax.post('/account/login', JSON.stringify({
           username: this.username,
           password: this.password
         })).then((res) => {
-            if (!res.headers['x-auth-token']) {
-              this.$Message.error(`登录失败：${res.message}`);
-              return;
-            }
-            if (res.data.role === 'ROOT') {
-              this.$Message.error(`ROOT用户禁止登陆，请使用内部接口操作`);
-              return;
-            }
-            delete sessionStorage.students;
-            delete sessionStorage.sid;
-            delete sessionStorage.secret;
-            delete localStorage.selectedCourse;
-            sessionStorage.token = res.headers['x-auth-token'];
-            sessionStorage.username = res.data.username;
-            sessionStorage.nickname = res.data.nickname;
-            sessionStorage.role = res.data.role;
-            sessionStorage.school_id = res.data.school_id;
-            sessionStorage.school_name = res.data.school_name;
-            sessionStorage.last_login_time = res.data.last_login_time;
-            this.$Message.success('登录成功');
+            this.$message.success('登录成功');
             this.$router.push(this.$route.query.redirect || '/user');
-          }, (res) => {
-            this.$Message.error(`登录失败：${res.message}`);
+          }, (err) => {
+            this.$message.error(`登录失败：${err.msg}`);
           }
         ).finally(() => {
-            msg();
             this.isSent = false;
           }
         );
-        const msg = this.$Message.loading({
-          content: '登录中...',
-          duration: 0
-        });
         this.isSent = true;
       }
     },

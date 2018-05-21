@@ -28,13 +28,6 @@ module.exports = {
       '@': resolve('src'),
     }
   },
-  externals: {
-    "jquery": 'jQuery',
-    "axios": 'axios',
-    "vue": 'Vue',
-    "vue-router": 'VueRouter',
-    "element-ui": "ELEMENT"
-  },
   module: {
     rules: [
       {

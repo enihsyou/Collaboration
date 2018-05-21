@@ -17,9 +17,8 @@ const router = new VueRouter(RouterConfig);
 
 const util = {
   env: process.env.NODE_ENV,
-  protocol: process.env.NODE_ENV === 'development' ? 'https:' : window.location.protocol,
-  baseURL: process.env.NODE_ENV === 'development' ? 'sign.sorahjy.com' :
-    process.env.NODE_ENV === 'production' ? `${window.location.host}` : '127.0.0.1:8888',
+  protocol: process.env.NODE_ENV === 'development' ? 'http:' : window.location.protocol,
+  baseURL: '112.64.79.116:8999',
   isNumber(input) {
     switch (typeof input) {
       case 'number':
@@ -103,6 +102,7 @@ util.ajax = axios.create({
     'content-type': 'application/json;charset=UTF-8'
   },
   timeout: 30 * 1000,
+  withCredentials: true,
 });
 
 //添加并发管理
@@ -110,68 +110,25 @@ util.ajax.all = axios.all;
 
 // 添加请求拦截器
 util.ajax.interceptors.request.use(function (config) {
-  if (sessionStorage.token != null) {
-    config.headers['x-auth-token'] = sessionStorage.token;
-  }
-  // config.headers['x-auth-token'] = store.state.info.token || '';
   return config;
 }, function (error) {
   return Promise.reject(error);
 });
 
 // 添加响应拦截器
-util.ajax.interceptors.response.use(function (response) {
-    if (response.data.message) response.message = response.data.message;
-    return response;
-  }, function (err) {
-    if (err && err.response) {
-      if (err.response.data.message != null) err.response.message = err.response.data.message;
-      else {
-        switch (err.response.status) {
-          case 400:
-            err.response.message = '请求格式错误';
-            break;
-          case 401:
-            err.response.message = '未授权，请登录';
-            break;
-          case 403:
-            err.response.message = '授权已过期';
-            break;
-          case 404:
-            err.response.message = '用户不存在';
-            break;
-          case 408:
-            err.response.message = '请求超时';
-            break;
-          case 500:
-            err.response.message = '服务器内部错误';
-            break;
-          case 501:
-            err.response.message = '服务未实现';
-            break;
-          case 502:
-            err.response.message = '网关错误';
-            break;
-          case 503:
-            err.response.message = '服务不可用';
-            break;
-          case 504:
-            err.response.message = '网关超时';
-            break;
-          case 505:
-            err.response.message = 'HTTP版本不受支持';
-            break;
-          default:
-            err.response.message = '错误代码：' + err.response.status;
-        }
-      }
-      return Promise.reject(err.response);
-    } else {
-      //未知原因
-      return Promise.reject(err || {
-        message: '未知错误'
+util.ajax.interceptors.response.use((response) => {
+    if (response.data.code !== '0') {
+      return Promise.reject({
+        code: response.data.code,
+        msg: response.data.msg
       });
     }
+    return response.data.data;
+  }, (err) => {
+    return Promise.reject({
+      code: err.status,
+      msg: err.message
+    });
   }
 );
 

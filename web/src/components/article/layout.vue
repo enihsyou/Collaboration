@@ -14,7 +14,7 @@
       </el-button>
       <el-aside :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}" width="13em">
         <el-menu :default-openeds="['myArticles','otherArticles']"
-                 :default-active="currenActiveItem">
+                 :default-active="currentActiveItem">
           <!--draftArticle-->
           <el-button class="draftArticle center" size="large" type="primary" icon="el-icon-plus"
                      @click="draftArticle">
@@ -26,7 +26,8 @@
               <i class="el-icon-document"></i>
               <span>我的文章</span>
             </template>
-            <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="paper.id"
+            <el-menu-item index="null" disabled v-if="myArticles.length===0"> —— 暂无文章 ——</el-menu-item>
+            <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="String(paper.id)"
                           @click="changeArticle(paper)">
               {{paper.title}}
             </el-menu-item>
@@ -37,7 +38,8 @@
               <i class="el-icon-tickets"></i>
               <span>我参与的文章</span>
             </template>
-            <el-menu-item class="submenu-item" v-for="paper in otherArticles" :key="paper.id" :index="paper.id"
+            <el-menu-item index="null" disabled v-if="otherArticles.length===0"> —— 暂无文章 ——</el-menu-item>
+            <el-menu-item class="submenu-item" v-for="paper in otherArticles" :key="paper.id" :index="String(paper.id)"
                           @click="changeArticle(paper)">
               {{paper.title}}
             </el-menu-item>
@@ -51,7 +53,11 @@
       <!--Main-->
       <el-main :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}">
         <transition name="el-zoom-in-top" mode="out-in" appear>
-          <router-view :key="currentArticle.id"/>
+          <router-view :id="String(currentArticle.id)"
+                       :isOwner="currentArticle.share_level==='OWN'"
+                       :key="currentArticle.id"
+                       @updateTitle="updateTitle"
+          />
         </transition>
       </el-main>
     </el-container>
@@ -67,56 +73,132 @@
     name: "layout",
     data() {
       return {
-        currenActiveItem: '',
         navHasHide: false,
         myArticles: [
-          {
-            id: 'some_hex_string',
-            title: '我的文章1'
-          }
+          // {
+          //   id: 'some_hex_string',
+          //   title: '我的文章1'
+          // }
         ],
         otherArticles: [
-          {
-            id: 'some_hex_string2',
-            title: '他的文章2'
-          }
+          // {
+          //   id: 'some_hex_string2',
+          //   title: '他的文章2'
+          // }
         ],
         currentArticle: {}
       }
     },
+    computed: {
+      currentActiveItem() {
+        return this.$route.params.id;
+      }
+    },
     methods: {
+      /*起草新文章*/
       draftArticle() {
-        let random = Math.random().toString(16).slice(8);
-        this.currentArticle = {
-          id: random,
-          title: '我的文章_' + random
-        };
-        this.myArticles.push(this.currentArticle);
-        this.currenActiveItem = random;
-        this.$router.push(`/user/${random}`)
+        this.$prompt('请输入文章标题', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /.{1,20}/,
+          inputErrorMessage: '标题字数应在1~20字之间！'
+        }).then((dialogInfo) => {
+          /*载入动画*/
+          const loading = this.$loading({
+            lock: true,
+            text: '新建文档中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          /*用户输入标题后发送给服务器*/
+          this.$.ajax.post('/pads', JSON.stringify({
+            title: dialogInfo.value
+          })).then((res) => {
+            this.currentArticle = {
+              id: res.id,
+              title: dialogInfo.value,
+              share_level: 'OWN'
+            };
+            this.myArticles.push(this.currentArticle);
+            this.$router.push(`/user/${res.id}`)
+          }, (err) => {
+            this.$message.error('新建失败！' + err.msg);
+          }).finally(() => {
+            loading.close();
+          });
+        }, (cancel) => {
+          this.$message.info('用户取消新建文章');
+        });
       },
+      /*切换文章页*/
       changeArticle(currentArticle) {
         this.currentArticle = currentArticle;
         this.$router.push(`/user/${this.currentArticle.id}`);
-        console.log(`跳转到文章：${this.currentArticle.id}:${this.currentArticle.title}`);
+        console.log(`跳转到文章：${this.currentArticle.id}-《${this.currentArticle.title}》`);
       },
+      /*更新了标题*/
+      updateTitle(id, newTitle) {
+        //todo 修改下标题
+      },
+      /*隐藏了导航栏*/
       hideNav() {
         this.navHasHide = true;
       },
+      /*显示导航栏*/
       showNav() {
         this.navHasHide = false;
       },
+      /*切换显示导航栏*/
       toggleNav() {
         this.navHasHide = !this.navHasHide;
       },
+      /*退出登录*/
       logout() {
         delete sessionStorage.token;
         this.$message.success('登出成功');
         this.$router.push('/login');
       }
     },
+    created() {
+      const loading = this.$loading({
+        lock: true,
+        text: '数据初始化...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      /*从服务器获取账户内文章*/
+      this.$.ajax.get('/pads?level=brief').then((res) => {
+        let articleID = this.$route.params.id;
+        for (let pad of res.pads) {
+          /*文章分类*/
+          if (pad.share_level === 'OWN') {
+            this.myArticles.push(pad);
+          } else {
+            this.otherArticles.push(pad)
+          }
+          /*确认当前文章*/
+          if (articleID === String(pad.id)) {
+            this.currentArticle = pad;
+          }
+        }
+        /*存在id但未找到*/
+        if (articleID && !this.currentArticle.id) {
+          this.$router.push('/user');
+        }
+      }, (err) => {
+        this.$alert(`网页初始化失败！${err.msg || ''}`, '错误', {
+          center: true,
+          showClose: false,
+          showCancelButton: false,
+          showConfirmButton: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false
+        });
+      }).finally(() => {
+        loading.close();
+      })
+    },
     mounted() {
-
     }
   }
 </script>
@@ -150,6 +232,9 @@
     box-shadow 2px 0 1px #50626e
     .submenu-item
       box-shadow 1px 1px 1px 1px #e6e6e6
+      white-space nowrap
+      text-overflow ellipsis
+      overflow hidden
 
     .draftArticle
       margin-top 1.5em
