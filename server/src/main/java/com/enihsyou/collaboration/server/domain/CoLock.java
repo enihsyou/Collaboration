@@ -1,5 +1,6 @@
 package com.enihsyou.collaboration.server.domain;
 
+import kotlin.ranges.IntRange;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
@@ -9,7 +10,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import static com.enihsyou.collaboration.server.domain.CoIndividual.DUMMY;
 import static java.time.Instant.now;
 import static javax.persistence.FetchType.LAZY;
 
@@ -17,10 +17,15 @@ import static javax.persistence.FetchType.LAZY;
 @Entity
 public class CoLock extends AbstractPersistable<Long> {
 
-    /** 拥有者 */
+    /** 执行锁定的人 */
     @ManyToOne(fetch = LAZY)
     @NotNull
-    private CoIndividual belongTo = DUMMY;
+    private CoIndividual belongTo = CoIndividual.DUMMY;
+
+    /** 锁定的文稿 */
+    @ManyToOne(fetch = LAZY)
+    @NotNull
+    private CoPad pad = CoPad.DUMMY;
 
     /** 左端点，包含 */
     private int left;
@@ -31,6 +36,23 @@ public class CoLock extends AbstractPersistable<Long> {
     /** 锁定时间（创建时间） */
     @NotNull
     private Instant createdTime = now();
+
+    ////
+    // Functions
+    ////
+
+    @NotNull
+    public IntRange getRange() {
+        return new IntRange(left, right);
+    }
+
+    public int getLeft() {
+        return left;
+    }
+
+    public int getRight() {
+        return right;
+    }
 
     ////
     // Getter Setter
@@ -46,27 +68,20 @@ public class CoLock extends AbstractPersistable<Long> {
         return this;
     }
 
-    public int getLeft() {
-        return left;
+    @NotNull
+    public CoPad getPad() {
+        return pad;
     }
 
-    public CoLock setLeft(final int left) {
-        this.left = left;
+    public CoLock setPad(@NotNull final CoPad pad) {
+        this.pad = pad;
         return this;
     }
 
-    public int getRight() {
-        return right;
-    }
-
-    public CoLock setRight(final int right) {
-        this.right = right;
-        return this;
-    }
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-       return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     /** 当前🔒是否已过期 */
