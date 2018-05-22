@@ -19,17 +19,15 @@
         </el-button>
       </div>
     </div>
-    <div class="floatBtn">
+    <div class="floatBtn" v-if="isOwner">
       <!--编辑按钮-->
       <el-button class="btn" id="edit_btn" size="large" type="warning" icon="el-icon-document"
                  @click="editArticleInfo" circle></el-button>
       <!--邀请按钮-->
       <el-button class="btn" id="share_btn" size="large" type="primary" icon="el-icon-plus"
-                 @click="shareArticle" circle v-if="isOwner"></el-button>
+                 @click="shareArticle" circle></el-button>
     </div>
-    <div id="editableArea" ref="editableArea" contenteditable v-show="range">
-
-    </div>
+    <div id="editableArea" ref="editableArea" contenteditable v-show="range"></div>
     <div class="cursor"></div>
   </div>
 </template>

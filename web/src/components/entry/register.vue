@@ -12,65 +12,63 @@
     </div>
     <div class="form__content" @keypress.enter="submit">
       <h1>新用户注册</h1>
-      <div>
-        <div class="styled-input filled">
-          <input type="text" class="styled-input__input" title="" v-model="username" maxlength="20"
-                 @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
-          <div class="styled-input__placeholder">
+      <div class="styled-input">
+        <input type="text" class="styled-input__input" title="" v-model="username" maxlength="20"
+               @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
+        <div class="styled-input__placeholder">
             <span class="styled-input__placeholder-text">
                 <span class="letter" v-for="char in '邮箱 / 用户名'">{{char}}</span>
             </span>
-          </div>
-          <div class="styled-input__circle"></div>
         </div>
-        <!--<div class="styled-input">-->
-          <!--<input type="text" class="styled-input__input" title="" v-model="nickname" maxlength="20"-->
-                 <!--@focus="placeholderAnimationIn" @blur="placeholderAnimationOut">-->
-          <!--<div class="styled-input__placeholder">-->
-            <!--<span class="styled-input__placeholder-text">-->
-                <!--<span class="letter" v-for="char in '昵称'">{{char}}</span>-->
-            <!--</span>-->
-          <!--</div>-->
-          <!--<div class="styled-input__circle"></div>-->
-        <!--</div>-->
-        <div class="styled-input">
-          <input type="password" class="styled-input__input" title="" v-model="password"
-                 @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
-          <div class="styled-input__placeholder">
-            <span class="styled-input__placeholder-text">
-                <span class="letter" v-for="char in '密码'">{{char}}</span>
-            </span>
-          </div>
-          <div class="styled-input__circle"></div>
-        </div>
-        <div class="styled-input">
-          <input type="password" name="confirmPassword" class="styled-input__input" title=""
-                 v-model="confirmPassword"
-                 @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
-          <div class="styled-input__placeholder">
-            <span class="styled-input__placeholder-text">
-                <span class="letter" v-for="char in '确认密码'">{{char}}</span>
-            </span>
-          </div>
-          <div class="styled-input__circle"></div>
-        </div>
-        <button type="button" class="styled-button" @click="submit">
-          <span class="styled-button__real-text-holder">
-              <span class="styled-button__real-text">注 册</span>
-              <span class="styled-button__moving-block face">
-                  <span class="styled-button__text-holder">
-                      <span class="styled-button__text">注 册</span>
-                  </span>
-              </span>
-              <span class="styled-button__moving-block back">
-                  <span class="styled-button__text-holder">
-                      <span class="styled-button__text">注 册</span>
-                  </span>
-              </span>
-          </span>
-        </button>
-        <router-link to="/login">返回登录</router-link>
+        <div class="styled-input__circle"></div>
       </div>
+      <!--<div class="styled-input">-->
+      <!--<input type="text" class="styled-input__input" title="" v-model="nickname" maxlength="20"-->
+      <!--@focus="placeholderAnimationIn" @blur="placeholderAnimationOut">-->
+      <!--<div class="styled-input__placeholder">-->
+      <!--<span class="styled-input__placeholder-text">-->
+      <!--<span class="letter" v-for="char in '昵称'">{{char}}</span>-->
+      <!--</span>-->
+      <!--</div>-->
+      <!--<div class="styled-input__circle"></div>-->
+      <!--</div>-->
+      <div class="styled-input">
+        <input type="password" class="styled-input__input" title="" v-model="password"
+               @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
+        <div class="styled-input__placeholder">
+          <span class="styled-input__placeholder-text">
+              <span class="letter" v-for="char in '密码'">{{char}}</span>
+          </span>
+        </div>
+        <div class="styled-input__circle"></div>
+      </div>
+      <div class="styled-input">
+        <input type="password" name="confirmPassword" class="styled-input__input" title=""
+               v-model="confirmPassword"
+               @focus="placeholderAnimationIn" @blur="placeholderAnimationOut">
+        <div class="styled-input__placeholder">
+          <span class="styled-input__placeholder-text">
+              <span class="letter" v-for="char in '确认密码'">{{char}}</span>
+          </span>
+        </div>
+        <div class="styled-input__circle"></div>
+      </div>
+      <button type="button" class="styled-button" @click="submit">
+        <span class="styled-button__real-text-holder">
+          <span class="styled-button__real-text">注 册</span>
+          <span class="styled-button__moving-block face">
+            <span class="styled-button__text-holder">
+                <span class="styled-button__text">注 册</span>
+            </span>
+          </span>
+          <span class="styled-button__moving-block back">
+            <span class="styled-button__text-holder">
+                <span class="styled-button__text">注 册</span>
+            </span>
+          </span>
+        </span>
+      </button>
+      <router-link to="/login">返回登录</router-link>
     </div>
   </div>
 </template>
@@ -122,9 +120,14 @@
         //   this.$message.error('密码长度应大于6位且小于16位！');
         //   return;
         // }
-        if (this.isSent) return;
+        const loading = this.$loading({
+          lock: true,
+          text: '注册中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.5)'
+        });
         this.$.ajax.post(`/account`, JSON.stringify({
-          username:this.username,
+          username: this.username,
           password: this.password,
           // nickname: this.nickname
         })).then((res) => {
@@ -134,10 +137,9 @@
             this.$message.error(`注册失败：${res.msg}`);
           }
         ).finally(() => {
-            this.isSent = false;
+            loading.close();
           }
         );
-        this.isSent = true;
       }
     },
     created() {

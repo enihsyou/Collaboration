@@ -30,10 +30,9 @@ const util = {
     }
   },
   //验证传入数据是否为空，支持多值
-  isEmpty(a1, a2, ...an) {
+  isEmpty(...args) {
     let res = false;
-    for (let index in arguments) {
-      let value = arguments[index];
+    for (let value of args) {
       switch (typeof value) {
         case 'number':
           res = value === 0;
@@ -125,9 +124,13 @@ util.ajax.interceptors.response.use((response) => {
     }
     return response.data.data;
   }, (err) => {
+    let msg = err.message;
+    if (!err.status && msg === 'Network Error') {
+      msg = '网络错误'
+    }
     return Promise.reject({
       code: err.status,
-      msg: err.message
+      msg: msg
     });
   }
 );
