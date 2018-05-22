@@ -29,7 +29,6 @@ dependencies {
     implementation('org.jetbrains.kotlin:kotlin-reflect')
 
     runtimeOnly('org.springframework.boot:spring-boot-devtools')
-    runtimeOnly('mysql:mysql-connector-java')
     runtimeOnly('org.postgresql:postgresql')
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
@@ -44,13 +43,17 @@ compileTestKotlin {
     kotlinOptions { freeCompilerArgs = ["-Xjsr305=strict"]; jvmTarget = "1.8" }
 }
 
+
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/docs/dokkaHtml"
     includeNonPublic = true
     skipEmptyPackages = false
 }
+
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
+    includeNonPublic = true
+    skipEmptyPackages = false
     outputDirectory = "$buildDir/docs/dokkaJavadoc"
 }

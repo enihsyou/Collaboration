@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -111,11 +112,11 @@ public class CoInviteLink {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     @NotNull
     public LocalDateTime getExpiredTime() {
-        return LocalDateTime.from(expiredTime);
+        return LocalDateTime.ofInstant(expiredTime, ZoneId.systemDefault());
     }
 }

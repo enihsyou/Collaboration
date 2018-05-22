@@ -8,6 +8,7 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /** 一段属于用户贡献的位置范围 */
 @Entity
@@ -62,6 +63,6 @@ public class CoBlame extends AbstractPersistable<Long> {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+       return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 }

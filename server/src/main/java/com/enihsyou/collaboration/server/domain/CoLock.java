@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import static com.enihsyou.collaboration.server.domain.CoIndividual.DUMMY;
 import static java.time.Instant.now;
@@ -65,7 +66,7 @@ public class CoLock extends AbstractPersistable<Long> {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+       return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     /** 当前🔒是否已过期 */

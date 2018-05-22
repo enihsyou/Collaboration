@@ -1,13 +1,13 @@
 package com.enihsyou.collaboration.server.domain;
 
+import org.hibernate.annotations.Type;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +36,9 @@ public class CoPad extends AbstractPersistable<Long> {
 
     /** 文稿当前内容 */
     @NotNull
+    @Lob
+    @Basic(fetch = LAZY)
+    @Type(type = "org.hibernate.type.TextType")
     private String body = "";
 
     /** 拥有本文稿的其他文件柜，也就是协同合作参与人员 */
@@ -153,6 +156,6 @@ public class CoPad extends AbstractPersistable<Long> {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 }
