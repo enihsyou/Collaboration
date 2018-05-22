@@ -15,8 +15,8 @@ abstract class RestRuntimeException(
 class NeedLoginException :
     RestRuntimeException(100, "用户需要登录")
 
-class WrongArgumentException(vararg arguments: String) :
-    RestRuntimeException(101, "参数[${arguments.joinToString()}]不正确")
+class WrongArgumentException(vararg arguments: String, adition: String = "") :
+    RestRuntimeException(101, "参数[${arguments.joinToString()}]不正确。$adition")
 
 class UserExistException(username: String) :
     RestRuntimeException(102, "用户名 [$username] 已存在")
@@ -44,6 +44,9 @@ class InviteLinkHasExpiredException(token: String) :
 
 class RangeCollapsedException(range: IntRange, collapsedWith: IntRange) :
     RestRuntimeException(401, "[$range]与区间[$collapsedWith]重叠")
+
+class LockNotExistException(lockId: Long) :
+    RestRuntimeException(454, "文稿锁 [$lockId] 不存在")
 
 @RestControllerAdvice
 class GlobalControllerExceptionHandler {

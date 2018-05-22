@@ -47,7 +47,7 @@ data class FetchPadDTO(
 data class LockAcquireDTO(
     val pad_id: DomainId,
     val client_revision: RevisionId,
-    val range: String
+    val range: IntRange
 )
 
 data class LockReleaseDTO(
@@ -55,7 +55,7 @@ data class LockReleaseDTO(
     val client_revision: RevisionId,
     val lock_id: DomainId,
     val modified: Boolean,
-    val replace: String?
+    val replacement: String?
 )
 
 //// Program use

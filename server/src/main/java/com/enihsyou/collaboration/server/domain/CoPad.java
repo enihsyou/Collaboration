@@ -55,12 +55,12 @@ public class CoPad extends AbstractPersistable<Long> {
      * 当前文章中的🔒，每一个都是互相不重叠的区间范围
      * 如果文档中存在未释放的🔒，则不能保存历史状态
      */
-    @OneToMany(mappedBy = "belongTo", orphanRemoval = true)
+    @OneToMany(mappedBy = "pad", orphanRemoval = true, cascade = CascadeType.ALL)
     @NotNull
     private Set<CoLock> locks = new HashSet<>();
 
     /** 文章中每个用户的贡献区间 */
-    @OneToMany(mappedBy = "belongTo", orphanRemoval = true)
+    @OneToMany(mappedBy = "pad", orphanRemoval = true, cascade = CascadeType.ALL)
     @NotNull
     private Set<CoBlame> contributes = new HashSet<>();
 
@@ -78,12 +78,35 @@ public class CoPad extends AbstractPersistable<Long> {
     }
 
     /** 添加一个历史记录 */
-    public CoPad addInstants(@NotNull final CoPadInstant instants) {
-        this.instants.add(instants);
-        instants.setBelongTo(this);
+    public CoPad addInstants(@NotNull final CoPadInstant instant) {
+        this.instants.add(instant);
+        instant.setBelongTo(this);
         return this;
     }
 
+    /** 添加一个锁定记录 */
+    public CoPad addLock(@NotNull final CoLock lock) {
+        this.locks.add(lock);
+        lock.setLocker(this.belongTo);
+        return this;
+    }
+
+    public CoPad removeLock(@NotNull final CoLock lock){
+        this.locks.remove(lock);
+        return this;
+    }
+
+    /** 添加一个贡献记录 */
+    public CoPad addContribute(@NotNull final CoBlame contribute) {
+        this.contributes.add(contribute);
+        return this;
+    }
+
+    // public String getRevisionId(){
+    //     for (final CoPadInstant instant : instants) {
+            // instant.getId()
+        // }
+    // }
     ////
     // Getter Setter
     ////
@@ -96,11 +119,6 @@ public class CoPad extends AbstractPersistable<Long> {
     @NotNull
     public Set<CoPadInstant> getInstants() {
         return instants;
-    }
-
-    public CoPad setContributes(@NotNull final Set<CoBlame> contributes) {
-        this.contributes = contributes;
-        return this;
     }
 
     @NotNull
@@ -129,11 +147,6 @@ public class CoPad extends AbstractPersistable<Long> {
         return locks;
     }
 
-    public CoPad addLocks(@NotNull final Set<CoLock> locks) {
-        this.locks = locks;
-        return this;
-    }
-
     @NotNull
     public CoIndividual getBelongTo() {
         return belongTo;
@@ -141,6 +154,11 @@ public class CoPad extends AbstractPersistable<Long> {
 
     public CoPad setBelongTo(@NotNull final CoIndividual belongTo) {
         this.belongTo = belongTo;
+        return this;
+    }
+
+    public CoPad setContributes(@NotNull final Set<CoBlame> contributes) {
+        this.contributes = contributes;
         return this;
     }
 

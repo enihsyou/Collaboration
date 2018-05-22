@@ -51,7 +51,7 @@ public class CabinetController {
     /** 用户创建一篇新文稿 */
     @PostMapping
     public RestResponse createPad(@RequestBody PadCreateDTO padCreateDTO) {
-        LOGGER.debug("创建新文稿 [{}] title: {}", PermissionUtil.currentUsername(), padCreateDTO.getTitle());
+        LOGGER.debug("创建文稿 [{}] title: {}", PermissionUtil.currentUsername(), padCreateDTO.getTitle());
 
         final CoIndividual account = permissionService.loggedAccount();
 
