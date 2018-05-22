@@ -42,6 +42,9 @@ class InviteLinkNotTargetedException(username: String) :
 class InviteLinkHasExpiredException(token: String) :
     RestRuntimeException(303, "邀请链接 [$token] 已失效")
 
+class RangeCollapsedException(range: IntRange, collapsedWith: IntRange) :
+    RestRuntimeException(401, "[$range]与区间[$collapsedWith]重叠")
+
 @RestControllerAdvice
 class GlobalControllerExceptionHandler {
 

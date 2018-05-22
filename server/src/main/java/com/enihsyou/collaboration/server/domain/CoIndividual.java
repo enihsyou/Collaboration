@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -93,7 +94,7 @@ public class CoIndividual extends AbstractPersistable<Long> {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     @Nullable

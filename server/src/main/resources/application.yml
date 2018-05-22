@@ -45,7 +45,7 @@ spring:
 
 # https://stackoverflow.com/a/40364487
   jpa:
-    show-sql: true
+#    show-sql: true
     generate-ddl: true
     database-platform: org.hibernate.dialect.PostgreSQL9Dialect
     hibernate:
@@ -61,7 +61,7 @@ logging:
     org.springframework.web.filter.CommonsRequestLoggingFilter: debug
     com.enihsyou: trace
 server:
-  address: 127.0.0.1
+  address: 0.0.0.0
   port: 8999
   servlet:
     context-path: /api

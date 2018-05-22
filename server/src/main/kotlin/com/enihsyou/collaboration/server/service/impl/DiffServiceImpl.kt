@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service
 @Service
 class DiffServiceImpl : DiffService {
 
-    override fun compare(): DiffResult {
+    override fun compare(former: String, latter: String, diff: IntRange): DiffResult {
+
+
         return DiffResult("")
     }
 

@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 import static com.enihsyou.collaboration.server.domain.CoIndividual.DUMMY;
@@ -83,7 +84,7 @@ public class CoPadControlBlock {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.from(createdTime);
+        return  LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     @Override

@@ -156,3 +156,20 @@ Content-Type: application/json
 Cookie: {{cookie}}
 
 < request/ws_lock_release.json
+
+
+
+
+
+
+
+
+
+
+
+
+###
+GET http://{{host}}/pads/6
+Cookie: {{cookie}}
+
+###

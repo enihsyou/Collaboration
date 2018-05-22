@@ -2,18 +2,14 @@ package com.enihsyou.collaboration.server.service.impl
 
 import com.enihsyou.collaboration.server.authentication.IndividualAuthenticationProvider
 import com.enihsyou.collaboration.server.domain.CoIndividual
-import com.enihsyou.collaboration.server.pojo.AccountCreateDTO
-import com.enihsyou.collaboration.server.pojo.AccountInfoChangeDTO
-import com.enihsyou.collaboration.server.pojo.AccountLoginDTO
-import com.enihsyou.collaboration.server.pojo.PasswordChangeDTO
-import com.enihsyou.collaboration.server.pojo.UserExistException
-import com.enihsyou.collaboration.server.pojo.UserNotExistException
+import com.enihsyou.collaboration.server.pojo.*
 import com.enihsyou.collaboration.server.repository.IndividualRepository
 import com.enihsyou.collaboration.server.service.AccountService
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class AccountServiceImpl(
@@ -79,7 +75,9 @@ class AccountServiceImpl(
         /*检查用户名存在*/
         val account = fetchAccount(username)
 
-        TODO() // todo
+        account.resetPasswordToken = UUID.randomUUID().toString()
+
+        return account
     }
 
     /**从数据库中获取用户名为[username]的记录*/

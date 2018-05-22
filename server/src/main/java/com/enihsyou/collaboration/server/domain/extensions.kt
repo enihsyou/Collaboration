@@ -9,7 +9,7 @@ fun CoIndividual.toCreateVO(): Any =
     )
 
 fun CoIndividual.toLoginVO(): Any =
-    toDetailVO(DetailLevel.BRIEF)
+    object {}
 
 fun CoIndividual.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): Any =
     mapOf(
@@ -34,8 +34,9 @@ fun Set<CoPadControlBlock>.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): A
     val padsInfo = when (level) {
         DetailLevel.BRIEF -> map {
             mapOf(
+                "id" to it.pad.id,
                 "title" to it.pad.title,
-                "owner" to it.individual.username,
+                "owner" to it.pad.belongTo.username,
                 "share_level" to it.status
             )
         }
@@ -56,14 +57,14 @@ fun Set<CoPadControlBlock>.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): A
 }
 
 fun CoPad.toCreateVO(): Any = mapOf(
-    "pad_id" to id,
+    "id" to id,
     "title" to title,
     "owner" to belongTo.username,
     "created_time" to createdTime
 )
 
 fun CoPad.toDetailVO(): Any = mapOf(
-    "pad_id" to id,
+    "id" to id,
     "title" to title,
     "body" to body,
     "owner" to belongTo.username,
