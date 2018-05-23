@@ -104,10 +104,10 @@
             break
           }
         }
+        //todo 向服务器申请加锁
         //保存当前文本内容
         this.savedContent = this.content;
         //转化当前区域为可编辑
-        //todo 假装向服务器请求是否可以加锁然后还通过了
         let editableArea = this.$refs.editableArea;
         // let editableArea = document.createElement('div');
         // editableArea.setAttribute('contenteditable', true);
@@ -163,6 +163,7 @@
             },
             on: {
               updateTitle: (id, title) => {
+                this.title = title;
                 //传递修改标题的事件
                 this.$emit('updateTitle', id, title)
               }

@@ -24,7 +24,7 @@
     <div class="invite-item inviteLink">
       <p class="title">通过链接邀请：</p>
       <el-tooltip class="item" effect="dark" content="复制到剪贴板" placement="right">
-        <el-input ref="shareLink" v-model="inviteLink" readonly>
+        <el-input ref="shareLink" v-model="inviteLink" placeholder="分享链接生成中..." readonly>
           <el-button slot="append" size="small" icon="el-icon-document"
                      @click="copyLink"></el-button>
         </el-input>
@@ -53,7 +53,7 @@
     </div>
     <div class="invite-item inviteMember">
       <p class="title">邀请成员成员：</p>
-      <el-autocomplete style="width:100%" class="inline-input" v-model="inviteMemberName" placeholder="请输入对方邮箱..."
+      <el-autocomplete style="width:100%" class="inline-input" v-model="inviteMemberEmail" placeholder="请输入对方邮箱..."
                        :trigger-on-focus="false" :fetch-suggestions="querySearch" @select="addMember">
         <el-button slot="append" icon="el-icon-search">搜索</el-button>
       </el-autocomplete>
@@ -68,26 +68,17 @@
       id: {
         type: String,
         default: ''
+      },
+      invitedGroup: {
+        type: Array,
+        default: []
       }
     },
     data() {
       return {
         linkPermission: 'readonly',
-        inviteLink: 'https://doc.ntm.com/invite/xxxxxxxxx',
-        invitedGroup: [
-          {
-            id: 'qweqasds',
-            name: '李狗蛋',
-            permission: 'readonly'
-          },
-          {
-            id: 'ewrewr',
-            name: '二闹子',
-            permission: 'editable'
-          },
-        ],
-        inviteMemberName: '',
-
+        inviteLink: '',
+        inviteMemberEmail: '',
       }
     },
     methods: {
@@ -108,7 +99,7 @@
         expendList(res);
       },
       addMember(member) {
-        this.inviteMemberName = '';
+        this.inviteMemberEmail = '';
         console.log('添加新成员：', member);
       }
     }
