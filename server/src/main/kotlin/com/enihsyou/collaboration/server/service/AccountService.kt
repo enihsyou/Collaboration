@@ -50,6 +50,8 @@ interface AccountService {
      *
      * @param username 找回密码的用户名*/
     fun resetPassword(username: String): CoIndividual
+
+    fun previewAccount(username: String): CoIndividual?
 }
 
 

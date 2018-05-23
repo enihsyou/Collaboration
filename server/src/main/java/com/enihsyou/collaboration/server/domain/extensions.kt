@@ -25,6 +25,12 @@ fun CoIndividual.toChangePasswordVO(): Any = mapOf(
     "username" to username
 )
 
+fun CoIndividual?.toPreviewAccountVO(): Any = mapOf(
+    "account_id" to this?.id,
+    "username" to this?.username,
+    "email_address" to this?.emailAddress
+)
+
 fun CoIndividual.toResetPasswordVO(): Any =
     toChangePasswordVO()
 
@@ -113,7 +119,7 @@ fun CoPadInstant.toRevisionDetailVO(): Any = mapOf(
     "contributes" to contributes.map { it.toDetailVO() }
 )
 
-fun CoPadInstant.toInstantSavedVO(): Any = mapOf(
+fun CoPadInstant.toTagAddedVO(): Any = mapOf(
     "instant_id" to id,
     "pad_id" to belongTo.id,
     "title" to belongTo.title,

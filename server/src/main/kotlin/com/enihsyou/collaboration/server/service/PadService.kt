@@ -69,13 +69,11 @@ interface PadService {
      * @param padId      目标文稿id
      * @param revisionId 需要添加标记的版本号
      * @param padSaveDTO 传来的所需参数
-     * @param account    谁创建的
      */
     fun addTagToInstant(
         padId: Long,
         revisionId: String,
-        padSaveDTO: PadSaveDTO,
-        account: CoIndividual
+        padSaveDTO: PadSaveDTO
     ): CoPadInstant
 
     /**

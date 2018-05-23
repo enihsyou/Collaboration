@@ -4,6 +4,7 @@ import com.enihsyou.collaboration.server.domain.CoBlame
 import com.enihsyou.collaboration.server.domain.CoIndividual
 import com.enihsyou.collaboration.server.domain.CoLock
 import com.enihsyou.collaboration.server.domain.CoPad
+import com.enihsyou.collaboration.server.domain.CoPadInstant
 import com.enihsyou.collaboration.server.pojo.RangeCollapsedException
 import com.enihsyou.collaboration.server.service.DocumentService
 import org.slf4j.LoggerFactory
@@ -86,26 +87,44 @@ class DocumentServiceImpl : DocumentService {
             if (it.range isBehind modifiedRange && it.createdTime > lock.createdTime) {
                 it.range += shiftLength
             } else if (modifiedRange overlappedWith it.range) {
-                blameToBeRemoved += it
-
                 val start1 = it.left
                 val end1 = modifiedRange.start
-                if (start1 < end1)
-                    blameToBeAdded += it.setRange(start1..end1)
 
                 val start2 = modifiedRange.endInclusive + shiftLength
                 val end2 = it.right + shiftLength
-                if (start2 < end2)
-                    blameToBeAdded += it.setRange(start2..end2)
+
+                /*处理锁定区间处于一个已有的贡献区间之内的特殊情况，这时候会拆分成两块新的贡献，这里添加新生成的部分*/
+                if (start1 < end1 && start2 < end2)
+                    blameToBeAdded += CoBlame()
+                        .setRange(start2..end2)
+                        .setContributor(it.contributor)
+                        .setPad(it.pad)
+                        .setCreatedTime(it.createdTime)
+
+                /*处理左值右值和覆盖*/
+                when {
+                    start1 < end1 -> it.range = start1..end1
+                    start2 < end2 -> it.range = start2..end2
+                    else          -> blameToBeRemoved += it
+                }
             }
         }
+        /*添加新增的贡献*/
         blameToBeAdded += CoBlame.from(lock)
             .recalculateUsingReplacement(replacement)
         pad.contributes -= blameToBeRemoved
         pad.contributes += blameToBeAdded
 
-        val modifiedBody = pad.body.replaceRange(modifiedRange, replacement)
-        pad.body = modifiedBody
+        pad.body = pad.body.replaceRange(modifiedRange, replacement)
+
+        val instant = CoPadInstant()
+            .setBelongTo(pad)
+            .setCreatedBy(lock.locker)
+            .setBody(pad.body)
+            .setTag(null)
+            .setContributes(pad.contributes)
+
+        pad.addInstants(instant)
 
         return pad
     }
@@ -124,26 +143,9 @@ class DocumentServiceImpl : DocumentService {
     private infix fun IntProgression.isBehind(other: IntProgression): Boolean =
         last <= other.first
 
-    private infix fun IntProgression.isInside(other: IntProgression): Boolean =
-        last <= other.first
-
     private fun IntProgression.length() = last - first
 
     private operator fun IntProgression.plus(number: Int): IntRange {
         return (first + number)..(last + number)
     }
-}
-
-fun main(args: Array<String>) {
-    val list = mutableListOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    val toBeRemoved = mutableListOf<Int>()
-    list.forEach {
-        if (it % 2 == 0) {
-            toBeRemoved += it
-            return@forEach
-        }
-        println(it)
-    }
-    list -= toBeRemoved
-    println(list)
 }

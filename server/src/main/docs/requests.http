@@ -1,3 +1,8 @@
+// 测试和验证账户存在
+GET http://{{host}}/account/info?username=aaa
+
+
+###
 // 注册
 POST http://{{host}}/account
 Content-Type: application/json
@@ -12,7 +17,7 @@ Content-Type: application/json
 
 < request/user.json
 
-> {% client.global.set("cookie", response.headers.valueOf("Set-Cookie")) %}
+> {% client.global.set("cookie", response.headers.valueOf("Set-Cookie")); %}
 ###
 
 // 获取账户信息1
@@ -117,6 +122,12 @@ Cookie: {{cookie}}
 // 分享文稿
 // level = [edit | view]
 POST http://{{host}}/pads/{{pad_id}}/share?level=edit
+Cookie: {{cookie}}
+
+###
+// 分享文稿给指定用户
+// level = [edit | view]
+POST http://{{host}}/pads/{{pad_id}}/share/{{shareTarget}}?level=edit
 Cookie: {{cookie}}
 
 ###

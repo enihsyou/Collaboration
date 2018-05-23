@@ -1,5 +1,6 @@
 package com.enihsyou.collaboration.server.domain;
 
+import com.enihsyou.collaboration.server.util.ConstKt;
 import kotlin.ranges.IntRange;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.domain.AbstractPersistable;
@@ -8,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import static javax.persistence.FetchType.LAZY;
 
@@ -97,7 +97,7 @@ public class CoBlame extends AbstractPersistable<Long> {
     }
 
     /** 设置贡献人 */
-    private CoBlame setContributor(@NotNull final CoIndividual belongTo) {
+    public CoBlame setContributor(@NotNull final CoIndividual belongTo) {
         this.belongTo = belongTo;
         return this;
     }
@@ -111,13 +111,18 @@ public class CoBlame extends AbstractPersistable<Long> {
         return pad;
     }
 
-    private CoBlame setPad(@NotNull final CoPad pad) {
+    public CoBlame setPad(@NotNull final CoPad pad) {
         this.pad = pad;
         return this;
     }
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(createdTime, ConstKt.SYSTEM_ZONE);
+    }
+
+    public CoBlame setCreatedTime(@NotNull final LocalDateTime createdTime) {
+        this.createdTime = createdTime.atZone(ConstKt.SYSTEM_ZONE).toInstant();
+        return this;
     }
 }
