@@ -16,6 +16,8 @@ interface PadService {
     /**
      * 获得用户的所有文稿
      *
+     * 直接返回数据库查询结果
+     *
      * @param account 获取的账户
      */
     fun listPads(account: CoIndividual): MutableSet<CoPadControlBlock>
@@ -23,12 +25,17 @@ interface PadService {
     /**
      * 获取一篇文档
      *
+     * 直接返回数据库关联结果
+     *
      * @param padId 获取目标
      */
     fun fetchPad(padId: Long): CoPad
 
     /**
      * 在用户的文件柜里创建一篇属于自己的新的[文稿][CoPad]
+     *
+     * 首先创建保存实体，设置好拥有者和标题
+     * 保存到数据库中后设置和用户的多对多关系
      *
      * @param account 获取的账户
      */
@@ -57,18 +64,26 @@ interface PadService {
     fun fetchRevision(padId: Long, revisionId: String): CoPadInstant
 
     /**
-     * 保存文稿的当前状态，创建一个历史记录
+     * 用户为历史记录添加标记
      *
-     * @param padId      目标文稿
+     * @param padId      目标文稿id
+     * @param revisionId 需要添加标记的版本号
      * @param padSaveDTO 传来的所需参数
      * @param account    谁创建的
      */
-    fun saveInstant(padId: Long, padSaveDTO: PadSaveDTO, account: CoIndividual): CoPadInstant
+    fun addTagToInstant(
+        padId: Long,
+        revisionId: String,
+        padSaveDTO: PadSaveDTO,
+        account: CoIndividual
+    ): CoPadInstant
 
     /**
      * 将文稿回滚到之前的一个历史记录状态
-     * * @param padId    目标文稿
      *
+     * 重设数据以后，回滚版本之后的历史版本，将被删除
+     *
+     * @param padId    目标文稿
      * @param revisionId 目标版本号
      */
     fun revertInstant(padId: Long, revisionId: String): CoPad

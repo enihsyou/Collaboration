@@ -64,7 +64,7 @@ Cookie: {{cookie}}
 
 < request/create_pad.json
 
-> {% client.global.set("pad_id", response.body.data.pad_id)%}
+> {% client.global.set("pad_id", response.body.data.pad_id); %}
 
 
 ###
@@ -140,7 +140,10 @@ POST http://{{host}}/websocket.pad.fetch
 Content-Type: application/json
 Cookie: {{cookie}}
 
-< request/ws_pad_fetch.json
+{
+  "pad_id": 6,
+  "revision_id" :"aaaaaaa"
+}
 ###
 
 // acquire lock
@@ -148,14 +151,27 @@ POST http://{{host}}/websocket.pad.lock.acquire
 Content-Type: application/json
 Cookie: {{cookie}}
 
-< request/ws_lock_acquire.json
+{
+  "pad_id": 6,
+  "revision_id" :"aaaaaaa",
+  "range": {
+    "start": 10,
+    "end": 20
+  }
+}
 ###
 // release lock
 POST http://{{host}}/websocket.pad.lock.release
 Content-Type: application/json
 Cookie: {{cookie}}
 
-< request/ws_lock_release.json
+{
+  "pad_id": 6,
+  "revision_id" :"aaaaaaa",
+  "lock_id": 19,
+  "modified": true,
+  "replacement": "Test Body."
+}
 
 
 

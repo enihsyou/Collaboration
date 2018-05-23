@@ -2,27 +2,28 @@ package com.enihsyou.collaboration.server.domain
 
 import com.enihsyou.collaboration.server.util.DetailLevel
 
-fun CoIndividual.toCreateVO(): Any =
-    mapOf(
-        "account_id" to id,
-        "username" to username
-    )
+fun CoIndividual.toCreateVO(): Any = mapOf(
+    "account_id" to id,
+    "username" to username
+)
 
-fun CoIndividual.toLoginVO(): Any =
-    object {}
+fun CoIndividual.toLoginVO(): Any = mapOf(
+    "account_id" to id,
+    "username" to username,
+    "email_address" to emailAddress,
+    "created_time" to createdTime
+)
 
-fun CoIndividual.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): Any =
-    mapOf(
-        "account_id" to id,
-        "username" to username,
-        "cabinet" to pads.toDetailVO(level)
-    )
+fun CoIndividual.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): Any = mapOf(
+    "account_id" to id,
+    "username" to username,
+    "cabinet" to pads.toDetailVO(level)
+)
 
-fun CoIndividual.toChangePasswordVO(): Any =
-    mapOf(
-        "account_id" to id,
-        "username" to username
-    )
+fun CoIndividual.toChangePasswordVO(): Any = mapOf(
+    "account_id" to id,
+    "username" to username
+)
 
 fun CoIndividual.toResetPasswordVO(): Any =
     toChangePasswordVO()
@@ -63,28 +64,43 @@ fun CoPad.toCreateVO(): Any = mapOf(
     "created_time" to createdTime
 )
 
-fun CoPad.toDetailVO(): Any = mapOf(
-    "id" to id,
-    "title" to title,
-    "body" to body,
-    "owner" to belongTo.username,
-    "created_time" to createdTime,
-    "instants" to instants.map { id },
-    "is_locked" to isLocked,
-    "workers" to workers.map {
-        mapOf(
-            "account_id" to it.individual.id,
-            "username" to it.individual.username,
-            "share_level" to it.status,
-            "share_time" to createdTime
-        )
-    }
+fun CoPad.toDetailVO(): Any {
+    val accounts = (contributes.map { it.contributor } + workers.map { it.individual }).toSet()
+
+    val padInfomation = mapOf(
+        "id" to id,
+        "title" to title,
+        "body" to body,
+        "owner" to belongTo.username,
+        "created_time" to createdTime,
+        "instants" to instants.map { id },
+        "is_locked" to isLocked,
+        "locks" to locks.map { it.toDetailVO() },
+        "contributions" to contributes.map { it.toDetailVO() },
+        "workers" to workers.map { it.toDetailVO() }
+    )
+
+    return mapOf(
+        "pad" to padInfomation,
+        "accounts" to accounts.map { it.toLoginVO() }
+    )
+}
+
+private fun CoPadControlBlock.toDetailVO(): Any = mapOf(
+    "account_id" to individual.id,
+    "share_level" to status,
+    "share_time" to createdTime
 )
 
 private fun CoBlame.toDetailVO(): Any = mapOf(
-    "account_id" to belongTo.id,
-    "username" to belongTo.username,
-    "range" to "$left-$right",
+    "account_id" to contributor.id,
+    "range" to range,
+    "created_time" to createdTime
+)
+
+private fun CoLock.toDetailVO(): Any = mapOf(
+    "account_id" to locker.id,
+    "range" to range,
     "created_time" to createdTime
 )
 

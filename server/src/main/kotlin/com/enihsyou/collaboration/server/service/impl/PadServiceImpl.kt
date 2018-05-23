@@ -84,9 +84,14 @@ class PadServiceImpl(
             ?: throw InstantNotExistException(padId, revisionId)
     }
 
-    override fun saveInstant(padId: Long, padSaveDTO: PadSaveDTO, account: CoIndividual): CoPadInstant {
+    override fun addTagToInstant(
+        padId: Long,
+        revisionId: String,
+        padSaveDTO: PadSaveDTO,
+        account: CoIndividual
+    ): CoPadInstant {
         val (tag) = padSaveDTO
-
+// fixme
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 

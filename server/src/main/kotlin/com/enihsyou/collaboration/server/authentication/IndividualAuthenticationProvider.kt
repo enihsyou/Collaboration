@@ -1,18 +1,22 @@
 package com.enihsyou.collaboration.server.authentication
 
 import com.enihsyou.collaboration.server.domain.CoIndividual
+import com.enihsyou.collaboration.server.pojo.BadCredentialsException
+import com.enihsyou.collaboration.server.pojo.UserNotExistException
 import com.enihsyou.collaboration.server.repository.IndividualRepository
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 
-/**使用这个类进行用户名密码的验证*/
+/**
+ * 使用这个类进行用户名密码的验证
+ *
+ * 通过对比提供的密码和数据库中保存的密码，判断是否验证通过
+ * */
 @Component
 class IndividualAuthenticationProvider(
     private val individualRepository: IndividualRepository,
@@ -21,7 +25,7 @@ class IndividualAuthenticationProvider(
 
     override fun retrieveUser(username: String, authentication: UsernamePasswordAuthenticationToken): UserDetails {
         val account = individualRepository.findByUsername(username)
-            ?: throw UsernameNotFoundException(username)
+            ?: throw UserNotExistException(username)
 
         return CoIndividualUserDetailsAdapter(account)
     }
