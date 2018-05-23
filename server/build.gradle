@@ -5,6 +5,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.spring" version "1.2.40"
     id "org.jetbrains.kotlin.plugin.jpa" version "1.2.40"
     id "org.jetbrains.dokka" version "0.9.16"
+    id "war"
 }
 
 group = 'com.enihsyou.collaboration'
@@ -33,6 +34,8 @@ dependencies {
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation('org.springframework.security:spring-security-test')
+
+    providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 }
 
 compileKotlin {
@@ -43,17 +46,36 @@ compileTestKotlin {
     kotlinOptions { freeCompilerArgs = ["-Xjsr305=strict"]; jvmTarget = "1.8" }
 }
 
+javadoc{
+    options.encoding = "utf-8"
+    options.locale = "zh_CN"
+}
 
 dokka {
     outputFormat = 'html'
     outputDirectory = "$buildDir/docs/dokkaHtml"
     includeNonPublic = true
     skipEmptyPackages = false
+    reportUndocumented = false
+
+    linkMapping {
+        dir = "src/main/kotlin"
+        url = "https://github.com/enihsyou/Collaboration/tree/master/server/src/main/kotlin"
+        suffix = "#L"
+    }
 }
 
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
     includeNonPublic = true
     skipEmptyPackages = false
+    reportUndocumented = false
     outputDirectory = "$buildDir/docs/dokkaJavadoc"
+}
+
+task dokkaHtmlAsJava(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'html-as-java'
+    includeNonPublic = true
+    skipEmptyPackages = false
+    outputDirectory = "$buildDir/docs/dokkaHtmlAsJava"
 }

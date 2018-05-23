@@ -1,6 +1,5 @@
 package com.enihsyou.collaboration.server.domain;
 
-import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Persistable;
@@ -49,29 +48,29 @@ public class CoInviteLink implements Persistable<String> {
     @NotNull
     private Instant expiredTime = createdTime.plus(1, ChronoUnit.DAYS);
 
-
     ////
     // Functions
     ////
 
+    /** 测试给定的用户名是否是这个邀请链接允许的用户 */
     public boolean isTargeted(String username) {
         if (invitee == null) return true;
         return Objects.equals(invitee, username);
     }
 
+    /** 测试这个邀请链接有没有过期 */
     public boolean isExpired() {
         return permission == CoLinkStatus.REVOKED || expiredTime.isAfter(Instant.now());
     }
 
+    /** 发起邀请的人 */
+    public CoIndividual getInviter() {
+        return pad.getBelongTo();
+    }
 
     ////
     // Getter Setter
     ////
-
-    /** 发起邀请的人 */
-    public CoIndividual getInviter() {
-        throw new NotImplementedError();
-    }
 
     @NotNull
     public String getToken() {
@@ -123,24 +122,18 @@ public class CoInviteLink implements Persistable<String> {
         return LocalDateTime.ofInstant(expiredTime, ZoneId.systemDefault());
     }
 
-    @Override
-    @NotNull
-    public String getId() {
-        return token;
-    }
-
-    @Override
-    public boolean isNew() {
-        return token.isEmpty();
-    }
-
     /*
      * (non-Javadoc)
-     * @see java.lang.Object#toString()
+     * @see java.lang.Object#hashCode()
      */
     @Override
-    public String toString() {
-        return String.format("Entity of type %s with id: %s", this.getClass().getName(), getId());
+    public int hashCode() {
+
+        int hashCode = 17;
+
+        hashCode += getId().hashCode() * 31;
+
+        return hashCode;
     }
 
     /*
@@ -164,20 +157,26 @@ public class CoInviteLink implements Persistable<String> {
 
         AbstractPersistable<?> that = (AbstractPersistable<?>) obj;
 
-        return null == this.getId() ? false : this.getId().equals(that.getId());
+        return this.getId().equals(that.getId());
     }
 
     /*
      * (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+     * @see java.lang.Object#toString()
      */
     @Override
-    public int hashCode() {
+    public String toString() {
+        return String.format("Entity of type %s with id: %s", this.getClass().getName(), getId());
+    }
 
-        int hashCode = 17;
+    @Override
+    @NotNull
+    public String getId() {
+        return token;
+    }
 
-        hashCode += null == getId() ? 0 : getId().hashCode() * 31;
-
-        return hashCode;
+    @Override
+    public boolean isNew() {
+        return token.isEmpty();
     }
 }

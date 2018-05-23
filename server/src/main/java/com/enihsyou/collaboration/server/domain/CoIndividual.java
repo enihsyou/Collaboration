@@ -49,6 +49,15 @@ public class CoIndividual extends AbstractPersistable<Long> {
     private String resetPasswordToken;
 
     ////
+    // Functions
+    ////
+
+    /** 添加文稿 */
+    public CoIndividual addPad(@NotNull final CoPadControlBlock pads) {
+        this.pads.add(pads);
+        return this;
+    }
+    ////
     // Getter Setter
     ////
 
@@ -87,10 +96,6 @@ public class CoIndividual extends AbstractPersistable<Long> {
         return pads;
     }
 
-    public CoIndividual addPad(@NotNull final CoPadControlBlock pads) {
-        this.pads.add(pads);
-        return this;
-    }
 
     @NotNull
     public LocalDateTime getCreatedTime() {

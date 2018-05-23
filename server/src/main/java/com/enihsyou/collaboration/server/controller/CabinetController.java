@@ -22,18 +22,31 @@ import java.util.Set;
 @RequestMapping("pads")
 public class CabinetController {
 
+    /** 日志记录器 */
     private static final Logger LOGGER = LoggerFactory.getLogger(CabinetController.class);
 
+    /** 进行用户权限控制 */
     private final PermissionService permissionService;
 
+    /** 执行文稿相关逻辑操作 */
     private final PadService padService;
 
+    /** Autowired 依赖注入构造器 */
     public CabinetController(final PermissionService permissionService, final PadService padService) {
         this.permissionService = permissionService;
         this.padService = padService;
     }
 
-    /** 获取用户文件柜的最新状态 */
+    /**
+     * 获取用户文件柜的最新状态
+     * <p>
+     * 用户登录成功以后，使用这个接口获取用户的所有文稿信息。
+     *
+     * @param level 获取信息的详细等级。
+     *              有两个级别 {@link DetailLevel#BRIEF }简要和{@link DetailLevel#DETAIL}详细
+     *              简要只给出每篇文稿的一些简单信息，比如标题和分享等级。
+     *              详细给出文稿主体，历史列表，参与者等信息
+     */
     @GetMapping
     public RestResponse detailCabinet(@RequestParam(required = false,
         defaultValue = DetailLevel.LEVEL_BRIEF) String level) {
@@ -48,7 +61,11 @@ public class CabinetController {
         return RestResponse.ok(ExtensionsKt.toDetailVO(pads, detailLevel));
     }
 
-    /** 用户创建一篇新文稿 */
+    /**
+     * 用户创建一篇新文稿
+     * <p>提供文稿标题，创建一篇新的文稿，保存到用户文件列表里。
+     * 允许不同的文稿具有相同的标题。
+     */
     @PostMapping
     public RestResponse createPad(@RequestBody PadCreateDTO padCreateDTO) {
         LOGGER.debug("创建文稿 [{}] title: {}", PermissionUtil.currentUsername(), padCreateDTO.getTitle());
@@ -63,6 +80,8 @@ public class CabinetController {
     /**
      * 用户修改文稿的信息
      * 需要管理权限
+     *
+     * 也就是修改文稿标题信息
      *
      * @param padId 修改的目标id号
      */
@@ -82,6 +101,8 @@ public class CabinetController {
      * 用户删除一篇文稿
      * 需要管理权限
      *
+     * 包括关联到这篇文稿下的所有贡献记录、锁的记录、分享链接全部丢失
+     *
      * @param padId 删除的目标id号
      */
     @DeleteMapping("{padId}")
@@ -98,8 +119,9 @@ public class CabinetController {
 
     /**
      * 用户只读预览一篇自己文件柜里的文稿
-     * 内容包含历史记录的引用，和当前文档中的锁的情况
      * 需要编辑权限
+     *
+     * 内容包含历史记录的引用，和当前文档中的锁的情况和文稿主体
      *
      * @param padId 想要预览的文稿id号
      */
@@ -134,30 +156,35 @@ public class CabinetController {
     }
 
     /**
-     * 用户手动保存一篇文稿的当前状态
+     * 给一个历史记录添加标签
      * 需要编辑权限
      *
-     * @param padId      想要进行保存历史版本的文稿id号
+     * @param padId      想要进行修改的文稿id号
+     * @param revisionId 想要修改的文稿历史版本号
      * @param padSaveDTO 保存时需要用户提供的信息
      */
-    @PutMapping("{padId}/revisions")
-    public RestResponse savePadInstant(@PathVariable long padId, @RequestBody PadSaveDTO padSaveDTO) {
+    @PutMapping("{padId}/revisions/{revisionId}")
+    public RestResponse savePadInstant(@PathVariable long padId,
+                                       @PathVariable String revisionId,
+                                       @RequestBody PadSaveDTO padSaveDTO) {
         final String username = PermissionUtil.currentUsername();
-        LOGGER.debug("保存文稿历史状态 [{}] pad: #{} revision: #{} tag: {}", username, padId, padSaveDTO.getTag());
+        LOGGER.debug("修改文稿历史状态标签 [{}] pad: #{} revision: #{} tag: {}", username, padId, revisionId,
+            padSaveDTO.getTag());
 
         permissionService.checkCoopship(padId, username);
 
         final CoIndividual account = permissionService.loggedAccount();
 
-        final CoPadInstant instant = padService.saveInstant(padId, padSaveDTO, account);
+        final CoPadInstant instant = padService.addTagToInstant(padId, revisionId, padSaveDTO, account);
 
         return RestResponse.ok(ExtensionsKt.toInstantSavedVO(instant));
-    }
+    } // todo
 
     /**
      * 拥有该文档的用户，将文档回滚到之前的状态
-     * 回滚后，在之后的历史状态将不存在
      * 需要管理权限
+     *
+     * 回滚后，在之后的历史状态将不存在
      *
      * @param padId    想要进行回滚的文稿id号
      * @param revision 目标的回滚版本号
@@ -179,7 +206,9 @@ public class CabinetController {
      * 需要管理权限
      *
      * @param padId 需要分享的文稿id号
-     * @param level 创建出来的分享链接的分享等级
+     * @param level 创建出来的分享链接的分享等级。
+     *              有两个分享等级{@link ShareLevel#CAN_EDIT }可查看和{@link ShareLevel#CAN_EDIT}可编辑
+     *
      */
     @PostMapping("{padId}/share")
     public RestResponse sharePad(@PathVariable long padId, @RequestParam String level) {
@@ -216,7 +245,7 @@ public class CabinetController {
      * 需要管理权限
      *
      * @param padId  需要分享的文稿id号
-     * @param target 想要移除的对象
+     * @param target 想要移除的对象，他的用户名
      */
     @DeleteMapping("{padId}/share")
     public RestResponse revokeToken(@PathVariable long padId, @RequestParam String target) {

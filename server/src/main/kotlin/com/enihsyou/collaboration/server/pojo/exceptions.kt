@@ -24,6 +24,9 @@ class UserExistException(username: String) :
 class UserNotExistException(username: String) :
     RestRuntimeException(201, "用户名 [$username] 不存在")
 
+class BadCredentialsException(username: String):
+    RestRuntimeException(200, "用户名 [$username] 密码错误")
+
 class PadNotExistException(padId: Long) :
     RestRuntimeException(202, "文稿 [$padId] 不存在")
 

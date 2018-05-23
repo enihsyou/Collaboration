@@ -24,14 +24,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WebsocketController {
 
+    /** 日志记录器 */
     private static final Logger LOGGER = LoggerFactory.getLogger(WebsocketController.class);
 
+    /** 进行用户权限控制 */
     private final PermissionService permissionService;
 
+    /** 执行Websocket相关逻辑操作 */
     private final WebsocketService websocketService;
 
+    /** 发送Websocket响应的处理器 */
     private final SimpMessageSendingOperations template;
 
+    /** Autowired 依赖注入构造器 */
     public WebsocketController(final PermissionService permissionService,
                                final WebsocketService websocketService,
                                final SimpMessageSendingOperations template) {
@@ -58,7 +63,13 @@ public class WebsocketController {
         return payload;
     }
 
-    /** 申请🔒 */
+    /**
+     * 申请一篇文稿的🔒
+     *
+     * 需要提供文稿号和客户端当前的版本号，以及需要锁定的位置。
+     *
+     * @throws com.enihsyou.collaboration.server.pojo.RangeCollapsedException 锁定范围有重叠
+     */
     @MessageMapping("pad.lock.acquire")
     @PostMapping("websocket.pad.lock.acquire")
     public RestResponse acquirePadLock(@RequestBody LockAcquireDTO lockAcquireDTO) {
@@ -75,7 +86,12 @@ public class WebsocketController {
         return payload;
     }
 
-    /** 释放🔒 */
+    /**
+     * 释放文稿的一个🔒
+     *
+     * 需要提供🔒的id和用户当前文稿号和版本号，以及是否有修改。
+     * 如果有修改，需要同时给出修改后的结果
+     */
     @MessageMapping("pad.lock.release")
     @PostMapping("websocket.pad.lock.release")
     public RestResponse releasePadLock(@RequestBody LockReleaseDTO lockReleaseDTO) {
@@ -91,6 +107,7 @@ public class WebsocketController {
         return payload;
     }
 
+    /** 异常处理 */
     @MessageExceptionHandler
     public void handleException(Throwable exception) {
 

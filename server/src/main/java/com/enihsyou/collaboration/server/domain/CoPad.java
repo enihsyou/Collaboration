@@ -91,6 +91,7 @@ public class CoPad extends AbstractPersistable<Long> {
         return this;
     }
 
+    /** 移除一个锁定记录 */
     public CoPad removeLock(@NotNull final CoLock lock){
         this.locks.remove(lock);
         return this;
