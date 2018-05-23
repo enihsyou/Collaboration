@@ -38,6 +38,10 @@ public class CoPadInstant extends AbstractPersistable<String> {
     @NotNull
     private CoIndividual createdBy = CoIndividual.DUMMY;
 
+    /** 版本号 */
+    @NotNull
+    private String revision = "";
+
     /** 为这个瞬时状态添加的标记 */
     @Nullable
     private String tag;
@@ -61,6 +65,16 @@ public class CoPadInstant extends AbstractPersistable<String> {
     ////
     // Getter Setter
     ////
+
+    @NotNull
+    public String getRevision() {
+        return revision;
+    }
+
+    public CoPadInstant setRevision(@NotNull final String revision) {
+        this.revision = revision;
+        return this;
+    }
 
     @NotNull
     public CoPad getBelongTo() {
@@ -104,7 +118,7 @@ public class CoPadInstant extends AbstractPersistable<String> {
 
     @NotNull
     public LocalDateTime getCreatedTime() {
-     return    LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     @NotNull

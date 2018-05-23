@@ -50,22 +50,19 @@ public class CoBlame extends AbstractPersistable<Long> {
     /** 使用 {@link CoLock} 创建对象的工厂方法 */
     @NotNull
     public static CoBlame from(@NotNull final CoLock lock) {
-        return new CoBlame()
-            .setContributor(lock.getLocker())
-            .setPad(lock.getPad())
-            .setRange(lock.getRange());
+        return new CoBlame().setContributor(lock.getLocker()).setPad(lock.getPad()).setRange(lock.getRange());
     }
 
     /**
-     * 将右端点移动一段长度。
+     * 重新计算右端点的位置。
      *
      * 用在用户使用锁替换了一段文字之后，左端点长度不变，右端点会变化。
      *
-     * @param howLong 变化长度，可以是负数
+     * @param replacement 区间内新替换的内容
      */
     @NotNull
-    public CoBlame extendLength(final int howLong) {
-        right += howLong;
+    public CoBlame recalculateUsingReplacement(@NotNull final String replacement) {
+        right = left + replacement.length();
         return this;
     }
 
@@ -99,7 +96,7 @@ public class CoBlame extends AbstractPersistable<Long> {
         return belongTo;
     }
 
-    /**设置贡献人*/
+    /** 设置贡献人 */
     private CoBlame setContributor(@NotNull final CoIndividual belongTo) {
         this.belongTo = belongTo;
         return this;

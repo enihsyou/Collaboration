@@ -1,18 +1,7 @@
 package com.enihsyou.collaboration.server.service.impl
 
-import com.enihsyou.collaboration.server.domain.CoIndividual
-import com.enihsyou.collaboration.server.domain.CoInviteLink
-import com.enihsyou.collaboration.server.domain.CoLinkStatus
-import com.enihsyou.collaboration.server.domain.CoPad
-import com.enihsyou.collaboration.server.domain.CoPadControlBlock
-import com.enihsyou.collaboration.server.domain.CoPadInstant
-import com.enihsyou.collaboration.server.pojo.InstantNotExistException
-import com.enihsyou.collaboration.server.pojo.InviteLinkHasExpiredException
-import com.enihsyou.collaboration.server.pojo.InviteLinkNotTargetedException
-import com.enihsyou.collaboration.server.pojo.PadCreateDTO
-import com.enihsyou.collaboration.server.pojo.PadLockedException
-import com.enihsyou.collaboration.server.pojo.PadSaveDTO
-import com.enihsyou.collaboration.server.pojo.PadUpdateDTO
+import com.enihsyou.collaboration.server.domain.*
+import com.enihsyou.collaboration.server.pojo.*
 import com.enihsyou.collaboration.server.repository.InviteLinkRepository
 import com.enihsyou.collaboration.server.repository.PadBlockRepository
 import com.enihsyou.collaboration.server.repository.PadRepository
@@ -121,9 +110,11 @@ class PadServiceImpl(
         /*重设数据*/
         pad.apply {
             body = revert.body
-            contributes = revert.contributes
+            contributes.retainAll(revert.contributes)
+            contributes.addAll(revert.contributes)
             /*删除之后的历史记录*/
             instants.removeIf { it.createdTime > revert.createdTime }
+            locks.clear()
         }
 
         padRepository.save(pad)

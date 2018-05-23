@@ -13,7 +13,7 @@ interface DocumentService { // todo use Command Pattern https://refactoring.guru
      * @param requestRange 锁定范围，左闭右开区间
      * @param operator 执行锁定的用户
      * */
-    fun lock(pad: CoPad, requestRange: IntRange, operator: CoIndividual): CoLock
+    fun acquire(pad: CoPad, requestRange: IntRange, operator: CoIndividual): CoLock
 
     /** 释放一个锁
      *
