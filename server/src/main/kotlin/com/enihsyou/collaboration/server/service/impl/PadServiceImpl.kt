@@ -122,21 +122,7 @@ class PadServiceImpl(
         return pad
     }
 
-    override fun sharePad(padId: Long, shareLevel: ShareLevel): CoInviteLink {
-        /*从数据库中获取对象*/
-        val pad = fetchPad(padId)
-
-        val link = CoInviteLink()
-            .setPad(pad)
-            .setPermission(shareLevel.toCoLinkStatus())
-            .setToken(UUID.randomUUID().toString())
-
-        inviteLinkRepository.save(link)
-
-        return link
-    }
-
-    override fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String): CoInviteLink {
+    override fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String?): CoInviteLink {
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 

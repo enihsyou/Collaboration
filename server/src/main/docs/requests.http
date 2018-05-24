@@ -96,12 +96,15 @@ Cookie: {{cookie}}
 
 
 ###
-// 保存文稿历史记录
-PUT http://{{host}}/pads/{{pad_id}}/revisions
+// 为文稿添加tag
+PUT http://{{host}}/pads/{{pad_id}}/revisions/tag
 Content-Type: application/json
 Cookie: {{cookie}}
 
-< request/instant_create.json
+{
+  "tag": "my commit"
+}
+
 
 > {% client.global.set("pad_id", response.body.data.revision_id)%}
 
@@ -119,15 +122,10 @@ Cookie: {{cookie}}
 
 
 ###
-// 分享文稿
+// 分享文稿 或 分享给指定用户
 // level = [edit | view]
-POST http://{{host}}/pads/{{pad_id}}/share?level=edit
-Cookie: {{cookie}}
-
-###
-// 分享文稿给指定用户
-// level = [edit | view]
-POST http://{{host}}/pads/{{pad_id}}/share/{{shareTarget}}?level=edit
+// target 是可选参数，给了就指定分享给特定用户
+POST http://{{host}}/pads/{{pad_id}}/share?level=edit&target=username
 Cookie: {{cookie}}
 
 ###

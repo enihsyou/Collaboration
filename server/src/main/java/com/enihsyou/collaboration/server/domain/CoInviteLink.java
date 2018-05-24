@@ -87,7 +87,7 @@ public class CoInviteLink implements Persistable<String> {
         return invitee;
     }
 
-    public CoInviteLink setInvitee(@NotNull final String invitee) {
+    public CoInviteLink setInvitee(@Nullable final String invitee) {
         this.invitee = invitee;
         return this;
     }

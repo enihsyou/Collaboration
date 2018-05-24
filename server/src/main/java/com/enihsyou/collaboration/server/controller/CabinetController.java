@@ -113,7 +113,7 @@ public class CabinetController {
      * @param padId 删除的目标id号
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @DeleteMapping("{padId}")
     public RestResponse deletePad(@PathVariable Long padId) {
@@ -136,7 +136,7 @@ public class CabinetController {
      * @param padId 想要预览的文稿id号
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @GetMapping("{padId}")
     public RestResponse previewPad(@PathVariable long padId) {
@@ -157,7 +157,7 @@ public class CabinetController {
      * @param padId 对应的文档id
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @GetMapping("{padId}/revisions/{revisionId}")
     public RestResponse fetchPadRevisions(@PathVariable long padId, @PathVariable String revisionId) {
@@ -180,14 +180,14 @@ public class CabinetController {
      * @param padSaveDTO 保存时需要用户提供的信息
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
-    @PutMapping("{padId}/revisions/{revisionId}")
+    @PutMapping("{padId}/revisions/{revisionId}/tag")
     public RestResponse addTagToInstant(@PathVariable long padId,
                                         @PathVariable String revisionId,
                                         @RequestBody PadSaveDTO padSaveDTO) {
         final String username = PermissionUtil.currentUsername();
-        LOGGER.debug("修改文稿历史状态标签 [{}] pad: #{} revision: #{} tag: {}", username, padId, revisionId,
+        LOGGER.debug("修改文稿历史状态标签 [{}] pad: #{} revision: #{} tag to: {}", username, padId, revisionId,
             padSaveDTO.getTag());
 
         permissionService.checkCoopship(padId, username);
@@ -207,7 +207,7 @@ public class CabinetController {
      * @param revision 目标的回滚版本号
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @PostMapping("{padId}/revisions")
     public RestResponse revertPadInstant(@PathVariable long padId, @RequestParam String revision) {
@@ -225,45 +225,20 @@ public class CabinetController {
      * 用户分享协同文稿
      * 需要管理权限
      *
-     * @param padId 需要分享的文稿id号
-     * @param level 创建出来的分享链接的分享等级。
-     *              有两个分享等级{@link ShareLevel#CAN_EDIT }可查看和{@link ShareLevel#CAN_EDIT}可编辑
-     *
-     * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
-     */
-    @PostMapping("{padId}/share")
-    public RestResponse sharePad(@PathVariable long padId, @RequestParam String level) {
-        final String username = PermissionUtil.currentUsername();
-        LOGGER.debug("分享文稿 [{}] #{} share level: {}", username, padId, level);
-
-        permissionService.checkOwnership(padId, username);
-
-        ShareLevel shareLevel = ShareLevel.parseLevel(level);
-
-        final CoInviteLink inviteLink = padService.sharePad(padId, shareLevel);
-
-        return RestResponse.ok(ExtensionsKt.toCreateVO(inviteLink));
-    }
-
-    /**
-     * 用户分享协同文稿给指定用户
-     * 需要管理权限
-     *
      * @param padId       需要分享的文稿id号
      * @param level       创建出来的分享链接的分享等级。
      *                    有两个分享等级{@link ShareLevel#CAN_EDIT }可查看和{@link ShareLevel#CAN_EDIT}可编辑
-     * @param shareTarget 指定的分享用户，需要用户存在
+     * @param shareTarget 可选，指定的分享用户，需要用户存在
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
-    @PostMapping("{padId}/share/{shareTarget}")
-    public RestResponse sharePadToUser(@PathVariable long padId,
-                                       @RequestParam String level,
-                                       @PathVariable String shareTarget) {
+    @PostMapping("{padId}/share")
+    public RestResponse sharePad(@PathVariable long padId,
+                                 @RequestParam String level,
+                                 @RequestParam(required = false) String shareTarget) {
         final String username = PermissionUtil.currentUsername();
-        LOGGER.debug("分享文稿给指定用户 [{}] to: {} pad: #{} share level: {}", username, shareTarget, padId, level);
+        LOGGER.debug("分享文稿 [{}] pad: #{} to: {} share level: {}", username, padId, shareTarget, level);
 
         permissionService.checkOwnership(padId, username);
 
@@ -300,7 +275,7 @@ public class CabinetController {
      * @param target 想要移除的对象，他的用户名
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
-     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @DeleteMapping("{padId}/share")
     public RestResponse revokeToken(@PathVariable long padId, @RequestParam String target) {
