@@ -10,7 +10,6 @@ import com.enihsyou.collaboration.server.pojo.InstantNotExistException
 import com.enihsyou.collaboration.server.pojo.InviteLinkHasExpiredException
 import com.enihsyou.collaboration.server.pojo.InviteLinkNotTargetedException
 import com.enihsyou.collaboration.server.pojo.PadCreateDTO
-import com.enihsyou.collaboration.server.pojo.PadLockedException
 import com.enihsyou.collaboration.server.pojo.PadSaveDTO
 import com.enihsyou.collaboration.server.pojo.PadUpdateDTO
 import com.enihsyou.collaboration.server.repository.InviteLinkRepository
@@ -87,27 +86,17 @@ class PadServiceImpl(
     override fun addTagToInstant(
         padId: Long,
         revisionId: String,
-        padSaveDTO: PadSaveDTO,
-        account: CoIndividual
+        padSaveDTO: PadSaveDTO
     ): CoPadInstant {
         val (tag) = padSaveDTO
-// fixme
+
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 
-        /*如果文稿还有🔒，不允许操作*/
-        if (pad.isLocked) throw PadLockedException(pad)
+        val instant = pad.instants.firstOrNull { it.revision == revisionId }
+            ?: throw InstantNotExistException(padId, revisionId)
 
-        val instant = CoPadInstant()
-            .setBelongTo(pad)
-            .setCreatedBy(account)
-            .setBody(pad.body)
-            .setTag(tag)
-            .setContributes(pad.contributes)
-
-        pad.addInstants(instant)
-
-        padRepository.save(pad)
+        instant.tag = tag
 
         return instant
     }
@@ -121,9 +110,11 @@ class PadServiceImpl(
         /*重设数据*/
         pad.apply {
             body = revert.body
-            contributes = revert.contributes
+            contributes.retainAll(revert.contributes)
+            contributes.addAll(revert.contributes)
             /*删除之后的历史记录*/
             instants.removeIf { it.createdTime > revert.createdTime }
+            locks.clear()
         }
 
         padRepository.save(pad)
@@ -131,21 +122,7 @@ class PadServiceImpl(
         return pad
     }
 
-    override fun sharePad(padId: Long, shareLevel: ShareLevel): CoInviteLink {
-        /*从数据库中获取对象*/
-        val pad = fetchPad(padId)
-
-        val link = CoInviteLink()
-            .setPad(pad)
-            .setPermission(shareLevel.toCoLinkStatus())
-            .setToken(UUID.randomUUID().toString())
-
-        inviteLinkRepository.save(link)
-
-        return link
-    }
-
-    override fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String): CoInviteLink {
+    override fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String?): CoInviteLink {
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 

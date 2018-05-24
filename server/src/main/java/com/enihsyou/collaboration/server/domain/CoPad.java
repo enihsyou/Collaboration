@@ -2,6 +2,7 @@ package com.enihsyou.collaboration.server.domain;
 
 import org.hibernate.annotations.Type;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
@@ -29,6 +30,10 @@ public class CoPad extends AbstractPersistable<Long> {
     @ManyToOne(fetch = LAZY)
     @NotNull
     private CoIndividual belongTo = CoIndividual.DUMMY;
+
+    /** 最新的版本号 */
+    @Nullable
+    private String lastRevision;
 
     /** 文稿标题 */
     @NotNull
@@ -113,6 +118,16 @@ public class CoPad extends AbstractPersistable<Long> {
     ////
 
     @NotNull
+    public String getLastRevision() {
+        return lastRevision;
+    }
+
+    public CoPad setLastRevision(@NotNull final String lastRevision) {
+        this.lastRevision = lastRevision;
+        return this;
+    }
+
+    @NotNull
     public Set<CoBlame> getContributes() {
         return contributes;
     }
@@ -158,19 +173,9 @@ public class CoPad extends AbstractPersistable<Long> {
         return this;
     }
 
-    public CoPad setContributes(@NotNull final Set<CoBlame> contributes) {
-        this.contributes = contributes;
-        return this;
-    }
-
     @NotNull
     public Set<CoPadControlBlock> getWorkers() {
         return workers;
-    }
-
-    public CoPad addCabinets(@NotNull final Set<CoPadControlBlock> cabinets) {
-        this.workers = cabinets;
-        return this;
     }
 
     @NotNull

@@ -69,13 +69,11 @@ interface PadService {
      * @param padId      目标文稿id
      * @param revisionId 需要添加标记的版本号
      * @param padSaveDTO 传来的所需参数
-     * @param account    谁创建的
      */
     fun addTagToInstant(
         padId: Long,
         revisionId: String,
-        padSaveDTO: PadSaveDTO,
-        account: CoIndividual
+        padSaveDTO: PadSaveDTO
     ): CoPadInstant
 
     /**
@@ -89,21 +87,13 @@ interface PadService {
     fun revertInstant(padId: Long, revisionId: String): CoPad
 
     /**
-     * 以指定的暴露等级分享文档，创建分享链接
-     *
-     * @param padId      创建分享链接的目标文稿
-     * @param shareLevel 期望的分享等级
-     */
-    fun sharePad(padId: Long, shareLevel: ShareLevel): CoInviteLink
-
-    /**
      * 以指定的暴露等级分享文档给指定用户，创建分享链接
      *
      * @param padId      创建分享链接的目标文稿
      * @param shareLevel 期望的分享等级
-     * @param invitee 分享给的用户名
+     * @param invitee    分享给的用户名，可选，为null意思是给所有人
      */
-    fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String): CoInviteLink
+    fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String?): CoInviteLink
 
     /**
      * 移除文稿的分享令牌

@@ -31,6 +31,24 @@ public class AccountController {
         this.permissionService = permissionService;
     }
 
+
+    /**
+     * 预览获取用户信息的接口
+     * <p>
+     * 用于快速测试账户的存在性和获取账户最简单信息。不需要权限。
+     * 不会抛出错误，如果不存在只会返回null
+     *
+     * @see ExtensionsKt#toPreviewAccountVO(CoIndividual)
+     */
+    @GetMapping("info")
+    public RestResponse previewAccount(@RequestParam String username) {
+        LOGGER.debug("寻找用户 [{}] search for: {}", PermissionUtil.currentUsername(), username);
+
+        CoIndividual account = accountService.previewAccount(username);
+
+        return RestResponse.ok(ExtensionsKt.toPreviewAccountVO(account));
+    }
+
     /**
      * 用户登录。
      * <p>
@@ -65,6 +83,7 @@ public class AccountController {
      * 如果存在相同的用户名，则提出错误。
      *
      * @throws com.enihsyou.collaboration.server.pojo.UserExistException 用户名已存在
+     * @see com.enihsyou.collaboration.server.pojo.AccountCreateDTO
      * @see org.springframework.security.crypto.bcrypt.BCrypt
      */
     @PostMapping
@@ -125,6 +144,7 @@ public class AccountController {
      * 已登录的用户发送原密码和新密码，将当前密码修改为新密码并保存生效。
      * 旧的session不会被移除，将继续有效，直到session失效期到了。
      * 密码使用明文传输。
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException 用户未登录
      */
     @PutMapping("password")
     public RestResponse changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO) {

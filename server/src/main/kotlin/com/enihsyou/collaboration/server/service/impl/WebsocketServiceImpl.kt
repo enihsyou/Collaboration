@@ -39,7 +39,7 @@ class WebsocketServiceImpl(
 
 //        if (client_revision <= pad.)
 
-        val lock = documentService.lock(pad, lock_range, account)
+        val lock = documentService.acquire(pad, lock_range, account)
         return lock
     }
 
