@@ -58,6 +58,11 @@
         trySaveCount: 0
       }
     },
+    watch: {
+      title() {
+        window.document.title = `${this.title} - NTM协同文档系统`;
+      }
+    },
     methods: {
       /*释放鼠标动作*/
       releaseMouse(e) {
@@ -166,6 +171,9 @@
                 this.title = title;
                 //传递修改标题的事件
                 this.$emit('updateTitle', id, title)
+              },
+              delArticle: () => {
+                this.$emit('delArticle', this.id);
               }
             }
           }),
@@ -212,9 +220,8 @@
       //更新文章信息
       this.$.ajax.get(`/pads/${this.id}`).then((res) => {
         console.log('初始化文章数据', res);
-        this.content = res.body;
-        this.title = res.title;
-        window.document.title = `${res.title} - NTM协同文档系统`;
+        this.content = res.pad.body;
+        this.title = res.pad.title;
         this.renderContent();
       }, (err) => {
         this.$message.error(`初始化文档失败！${err.msg || ''}`);
@@ -230,7 +237,8 @@
 <style lang="stylus">
   #editableArea
     display inline !important
-    box-shadow 0 0 2px 2px deepskyblue
+    padding .1em 0 .0688em 0
+    box-shadow 0 1px 0 deepskyblue
 </style>
 
 <style lang="stylus" scoped>
@@ -262,13 +270,14 @@
     position fixed
     display flex
     flex-direction column
-    justify-content space-around
-    right -60px
-    bottom 6em
-    width 100px
-    height 200px
+    justify-content center
+    align-items center
+    right -80px
+    bottom 4em
+    width 150px
+    height 400px
     text-align center
-    transition all 500ms ease-in 0s
+    transition all 200ms ease-in 0s
     &:hover
       right 0
     .btn
@@ -276,7 +285,7 @@
       width 40px
       height 40px
       zoom 2
-      margin 0
+      margin .5em 0 0 0
 
   #sub_btn_group
     position absolute

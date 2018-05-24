@@ -18,7 +18,7 @@ const router = new VueRouter(RouterConfig);
 const util = {
   env: process.env.NODE_ENV,
   protocol: process.env.NODE_ENV === 'development' ? 'http:' : window.location.protocol,
-  baseURL: '112.64.79.116:8999',
+  baseURL: '139.227.149.208:8999',
   isNumber(input) {
     switch (typeof input) {
       case 'number':

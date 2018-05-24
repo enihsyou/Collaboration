@@ -12,10 +12,19 @@
     <div class="edit-item">
       <el-button class="delete-btn" type="danger"
                  :loading="deleteBtnLoading"
-                 @click="delArticle">
+                 @click="showDelArticleDialog">
         删除文章
       </el-button>
     </div>
+    <el-dialog title="提示" :visible.sync="showDelDialog"
+               :close-on-click-modal="false" :show-close="false"
+               append-to-body>
+      删除文章后所有用户将不能编辑，此操作不可恢复，是否继续？
+      <div slot="footer">
+        <el-button type="info" :disabled="deleteBtnLoading" @click="showDelDialog=false" plain>取消</el-button>
+        <el-button type="danger" :loading="deleteBtnLoading" @click="delArticle">确定删除该文章</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -34,6 +43,7 @@
     },
     data() {
       return {
+        showDelDialog: false,
         editBtnLoading: false,
         deleteBtnLoading: false,
       }
@@ -52,24 +62,23 @@
           this.editBtnLoading = false;
         })
       },
+      showDelArticleDialog() {
+        this.showDelDialog = true;
+      },
       delArticle() {
-        this.$confirm('删除文章后所有用户将不能编辑，此操作不可恢复，是否继续？', '提示', {
-          confirmButtonText: '确定删除该文章',
-          confirmButtonClass: 'danger'
-        }).then((res) => {
-          this.deleteBtnLoading = true;
-          this.$.ajax.delete(`/pads/${this.id}`).then((res) => {
-            this.$message.success('删除文章成功');
-          }, (err) => {
-            this.$message.error('删除文章失败:' + err.msg);
-          }).finally(() => {
-            this.deleteBtnLoading = false;
-          })
+        this.deleteBtnLoading = true;
+        this.$.ajax.delete(`/pads/${this.id}`).then((res) => {
+          this.showDelDialog = false;
+          this.$message.success('删除文章成功');
+          this.$emit('delArticle');
+        }, (err) => {
+          this.$message.error('删除文章失败:' + err.msg);
+        }).finally(() => {
+          this.deleteBtnLoading = false;
         })
       }
     },
     mounted() {
-
     },
   }
 </script>

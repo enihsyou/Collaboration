@@ -56,6 +56,7 @@
                      :isOwner="currentArticle.share_level==='OWN'"
                      :key="currentArticle.id"
                      @updateTitle="updateTitle"
+                     @delArticle="delArticle"
                      v-else/>
       </el-main>
       <!--hideNavBtn-->
@@ -124,8 +125,7 @@
           }).finally(() => {
             loading.close();
           });
-        }, (cancel) => {
-          this.$message.info('用户取消新建文章');
+        }, () => {
         });
       },
       /*切换文章页*/
@@ -137,18 +137,44 @@
       },
       /*更新了标题*/
       updateTitle(id, newTitle) {
+        const callback = (article, index, newTitle) => {
+          const newArticle = new Article(article.id, newTitle, article.share_level);
+          if (index < this.myArticles.length) {
+            //在我的文章里
+            this.myArticles.splice(index, 1, newArticle)
+          } else {
+            //在其他文章里
+            this.otherArticles.splice(index - this.myArticles.length, 1, newArticle)
+          }
+        };
+        this.execArticle(id, callback, newTitle)
+      },
+      /*删除了文章*/
+      delArticle(id) {
+        this.$msgbox.close();
+        this.currentArticle = {};
+        const callback = (article, index) => {
+          if (index < this.myArticles.length) {
+            //在我的文章里
+            this.myArticles.splice(index, 1)
+          } else {
+            //在其他文章里
+            this.otherArticles.splice(index - this.myArticles.length, 1)
+          }
+        };
+        this.execArticle(id, callback);
+        this.showNav();
+        this.$router.push('/user');
+      },
+      /*查找文章并执行动作*/
+      execArticle(id, callback, ...args) {
         for (let [index, article] of [...this.myArticles, ...this.otherArticles].entries()) {
-          if (article.id === id) {
-            let newArticle = new Article(article.id, newTitle, article.share_level);
-            if (index < this.myArticles.length) {
-              //在我的文章里
-              this.myArticles.splice(index, 1, newArticle)
-            } else {
-              //在其他文章里
-              this.otherArticles.splice(index - this.myArticles.length, 1, newArticle)
-            }
+          if (String(article.id) === String(id)) {
+            if (callback) callback(article, index, ...args);
+            return true;
           }
         }
+        return false;
       },
       /*隐藏了导航栏*/
       hideNav() {
@@ -178,6 +204,7 @@
       });
       /*从服务器获取账户内文章*/
       this.$.ajax.get('/pads?level=brief').then((res) => {
+        console.log('初始化文章列表:', res);
         let articleID = this.$route.params.id;
         for (let pad of res.pads) {
           /*文章分类*/
@@ -188,6 +215,7 @@
           }
           /*确认当前文章*/
           if (articleID === String(pad.id)) {
+            this.hideNav();
             this.currentArticle = pad;
           }
         }
