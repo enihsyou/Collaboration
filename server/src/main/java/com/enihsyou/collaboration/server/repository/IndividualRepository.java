@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IndividualRepository extends JpaRepository<CoIndividual, Long> {
 
+    /** 用用户名搜索 */
     @Nullable
     CoIndividual findByUsername(@NotNull final String username);
 }

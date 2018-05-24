@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InviteLinkRepository extends JpaRepository<CoInviteLink, String> {
 
+    /** 用id搜索 */
     @NotNull
     default CoInviteLink queryByToken(final String token) {
         return findById(token).orElseThrow(() -> new InviteLinkNotExistException(token));

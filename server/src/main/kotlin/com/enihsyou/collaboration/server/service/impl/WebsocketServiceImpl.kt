@@ -26,7 +26,7 @@ class WebsocketServiceImpl(
 ) : WebsocketService {
 
     override fun fetchStatus(fetchPadDTO: FetchPadDTO): CoPad {
-        val (pad_id, client_revision) = fetchPadDTO
+        val (pad_id, client_revision, username) = fetchPadDTO
 
         val pad = padService.fetchPad(pad_id)
 
@@ -34,7 +34,7 @@ class WebsocketServiceImpl(
     }
 
     override fun acquireLock(lockAcquireDTO: LockAcquireDTO, account: CoIndividual): CoLock {
-        val (pad_id, client_revision, lock_range) = lockAcquireDTO
+        val (pad_id, client_revision, username, lock_range) = lockAcquireDTO
         val pad = padService.fetchPad(pad_id)
 
 //        if (client_revision <= pad.)
@@ -44,7 +44,7 @@ class WebsocketServiceImpl(
     }
 
     override fun releaseLock(lockReleaseDTO: LockReleaseDTO, account: CoIndividual): CoPad {
-        val (pad_id, client_revision, lock_id, modified, replace_with) = lockReleaseDTO
+        val (pad_id, client_revision, username, lock_id, modified, replace_with) = lockReleaseDTO
 
         val pad = padService.fetchPad(pad_id)
         if (!modified || replace_with == null) return pad
