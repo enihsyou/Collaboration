@@ -50,9 +50,10 @@ fun Set<CoPadControlBlock>.toDetailVO(level: DetailLevel = DetailLevel.BRIEF): A
 
         DetailLevel.DETAIL -> map {
             mapOf(
-                "share_level" to it.status,
-                "pad" to it.pad.toDetailVO(),
-                "owner" to it.individual.username
+                "id" to it.pad.id,
+                "title" to it.pad.title,
+                "owner" to it.pad.belongTo.username,
+                "share_level" to it.status
             )
         }
     }
@@ -73,7 +74,7 @@ fun CoPad.toCreateVO(): Any = mapOf(
 fun CoPad.toDetailVO(): Any {
     val accounts = (contributes.map { it.contributor } + workers.map { it.individual }).toSet()
 
-    val padInfomation = mapOf(
+    val padInformation = mapOf(
         "id" to id,
         "title" to title,
         "body" to body,
@@ -87,7 +88,7 @@ fun CoPad.toDetailVO(): Any {
     )
 
     return mapOf(
-        "pad" to padInfomation,
+        "pad" to padInformation,
         "accounts" to accounts.map { it.toLoginVO() }
     )
 }
