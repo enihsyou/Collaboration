@@ -9,16 +9,10 @@ import 'element-ui/lib/theme-chalk/base.css';
 import RouterConfig from './router'
 import App from './App'
 
-Vue.config.productionTip = false;
-Vue.use(ElementUI);
-Vue.use(VueRouter);
-
-const router = new VueRouter(RouterConfig);
-
 const util = {
   env: process.env.NODE_ENV,
   protocol: process.env.NODE_ENV === 'development' ? 'http:' : window.location.protocol,
-  baseURL: '139.227.149.208:8999',
+  baseURL: '112.65.79.238:8999',
   isNumber(input) {
     switch (typeof input) {
       case 'number':
@@ -152,6 +146,7 @@ Date.prototype.format = function (fmt) {
   return fmt;
 };
 
+const router = new VueRouter(RouterConfig);
 router.beforeEach((to, from, next) => {
   //设置标签标题
   let title = to.meta.title ? to.meta.title : '';
@@ -215,6 +210,8 @@ router.afterEach(() => {
 });
 
 Vue.prototype.$ = util;
+Vue.use(ElementUI);
+Vue.use(VueRouter);
 
 new Vue({
   el: '#app',

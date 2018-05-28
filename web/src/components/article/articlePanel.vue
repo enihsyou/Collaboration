@@ -1,16 +1,18 @@
 <template>
   <div id="article-layout">
-    <div id="sub_btn_group" v-show="range &&!callBtn">
-      <i class="tip el-icon-d-arrow-right" v-if="trySaveCount > 2"></i>
-      <el-button-group>
-        <el-button id="sub_btn" type="success" size="large" @click.stop="subContent">
-          提交
-        </el-button>
-        <el-button id="cancel_sub_btn" type="info" size="large" @click.stop="cancelSubContent">
-          取消
-        </el-button>
-      </el-button-group>
-    </div>
+    <transition name="el-fade-in">
+      <div id="sub_btn_group" v-show="range &&!callBtn">
+        <i class="tip el-icon-d-arrow-right" v-if="trySaveCount > 2"></i>
+        <el-button-group>
+          <el-button id="sub_btn" type="success" size="large" @click.stop="subContent">
+            提交
+          </el-button>
+          <el-button id="cancel_sub_btn" type="info" size="large" @click.stop="cancelSubContent">
+            取消
+          </el-button>
+        </el-button-group>
+      </div>
+    </transition>
     <div id="content-layout" @click="releaseMouse">
       <div class="inner">
         <span id="content" ref="content"></span>
@@ -20,14 +22,21 @@
       </div>
     </div>
     <div class="floatBtn" v-if="isOwner">
+      <!--历史版本按钮-->
+      <el-button class="btn" id="history_btn" size="large" type="info" icon="el-icon-document"
+                 title="历史版本"
+                 @click="listArticleHistory" circle></el-button>
       <!--编辑按钮-->
-      <el-button class="btn" id="edit_btn" size="large" type="warning" icon="el-icon-document"
+      <el-button class="btn" id="edit_btn" size="large" type="warning" icon="el-icon-edit-outline"
+                 title="编辑文章信息"
                  @click="editArticleInfo" circle></el-button>
       <!--邀请按钮-->
-      <el-button class="btn" id="share_btn" size="large" type="primary" icon="el-icon-plus"
+      <el-button class="btn" id="share_btn" size="large" type="primary" icon="el-icon-share"
+                 title="邀请其他小伙伴"
                  @click="shareArticle" circle></el-button>
     </div>
     <div id="editableArea" ref="editableArea" contenteditable v-show="range"></div>
+    <div id="rangeArea" style="display: inline" ref="rangeArea"></div>
     <div class="cursor"></div>
   </div>
 </template>
@@ -49,13 +58,49 @@
       }
     },
     data() {
+      const wsURL = `${this.$.protocol.includes('s') ? 'wss' : 'ws'}://${this.$.baseURL}/api/websocket`;
+      const webSocketClient = Stomp.client(wsURL);
+      //设置脉搏时间30s
+      webSocketClient.heartbeat.outgoing = 30 * 1000;
+      webSocketClient.heartbeat.incoming = 0;
+      //设置消息回调
+      const msgCallback = (response) => {
+        // console.log('收到来自服务器的消息:', response);
+      };
+      //设置连接回调
+      const connCallback = (frame) => {
+        // console.log(`${this.$.protocol.includes('s') ? 'wss' : 'ws'}：与服务器建立连接：${frame}`);
+        webSocketClient.subscribe(`/topic/pad.${this.id}`, msgCallback);
+      };
+      //设置连接头
+      const wsHead = {
+        // login: 'mylogin',
+        // passcode: 'mypasscode',
+        // 'client-id': 'my-client-id'
+      };
+      /*通过ws向服务器发送数据*/
+      webSocketClient.sendMsg = (path, msg) => {
+        if (webSocketClient.connected) {
+          const params = {
+            priority: 9
+          };
+          webSocketClient.send(path, params, msg);
+        } else {
+          throw new Error('WebSocket is not connected!')
+        }
+      };
+      //连接
+      webSocketClient.connect(wsHead, connCallback);
       return {
+        workers: [],
+        current_revision: -1,
         title: '',
         content: '',
         savedContent: '',
         range: null,
         callBtn: false,
-        trySaveCount: 0
+        trySaveCount: 0,
+        webSocketClient
       }
     },
     watch: {
@@ -109,15 +154,33 @@
             break
           }
         }
-        //todo 向服务器申请加锁
+        //给文段加个临时选择标签
+        let rangeArea = this.$refs.rangeArea;
+        this.range.surroundContents(rangeArea);
+        //获得标签的位置偏移
+        const tmpContent = this.$refs.content.innerHTML;
+        const rangeMatch = tmpContent.match(/<div[^>]+>(.*)<\/div>/m);
+        const rawStartOffset = rangeMatch.index;
+        const startOffset = tmpContent.slice(0, rawStartOffset).replace(/<br>/gm, '\n').length;
+        const endOffset = startOffset + rangeMatch[1].replace(/<br>/gm, '\n').length;
+        //清除临时选择标签
+        this.renderContent(content.innerHTML.replace(/<div[^>]+>(.*)<\/div>/igm, "$1"));
+        rangeArea.innerHTML = '';
+        document.getElementsByTagName('body')[0].appendChild(rangeArea);
+        //向服务器申请加锁
+        this.webSocketClient.sendMsg('/websocket.pad.lock.acquire', JSON.stringify({
+          pad_id: this.id,
+          revision_id: this.current_revision,
+          range: {
+            start: startOffset,
+            end: endOffset
+          }
+        }));
+        //fixme 选区被清
         //保存当前文本内容
         this.savedContent = this.content;
         //转化当前区域为可编辑
         let editableArea = this.$refs.editableArea;
-        // let editableArea = document.createElement('div');
-        // editableArea.setAttribute('contenteditable', true);
-        // editableArea.setAttribute('ref', 'editableArea');
-        // editableArea.id = 'editableArea';
         this.range.surroundContents(editableArea);
         editableArea.focus();
         this.callBtn = false;
@@ -143,18 +206,37 @@
           //清除编辑区
           this.clearRange();
           this.renderContent(this.savedContent);
-          this.$message.info('已放弃编辑');
+          this.$message.warning('已恢复编辑前的内容');
         }, (err) => {
-          this.$message.info('请继续编辑');
+          // this.$message.info('请继续编辑');
         });
       },
+      // /*获得当前选区范围*/
+      // getRangeOffset() {
+      //   let res = {
+      //     start: -1,
+      //     end: -1
+      //   };
+      //
+      //   return res;
+      // },
       /*清除可编辑栏*/
       clearRange() {
         let editContentElem = this.$refs.editableArea;
-        this.renderContent(this.$refs.content.innerHTML.replace(/(<div([^>]+)>)/ig, ""));
+        let content = this.$refs.content.innerHTML;
+        this.renderContent(content.replace(/<div[^>]+>(.*)<\/div>/igm, "$1"));
         editContentElem.innerHTML = '';
         document.getElementsByTagName('body')[0].appendChild(editContentElem);
         this.range = null;
+      },
+      /*从文本渲染到html页面*/
+      renderContent(content) {
+        if (typeof content === 'string') this.content = content;
+        this.$refs.content.innerHTML = this.content.replace(/\n/gi, '<br>');
+      },
+      /*查看文章历史版本*/
+      listArticleHistory() {
+
       },
       /*编辑文章信息*/
       editArticleInfo() {
@@ -194,6 +276,7 @@
           message: h(inviteBox, {
             props: {
               id: this.id,
+              workers: this.workers
             }
           }),
           closeOnClickModal: false,
@@ -203,30 +286,30 @@
           //关闭邀请框
         });
       },
-      /*从文本渲染到html页面*/
-      renderContent(content) {
-        if (typeof content === 'string') this.content = content;
-        this.$refs.content.innerHTML = this.content.replace(/\n/g, '<br>');
-      }
     },
     created() {
 
     },
     mounted() {
       if (this.id === 'undefined') {
-        //页面未加载成功的情况
+        //页面未加载完成的情况
         return;
       }
       //更新文章信息
       this.$.ajax.get(`/pads/${this.id}`).then((res) => {
         console.log('初始化文章数据', res);
+        this.current_revision = res.pad.current_revision;
         this.content = res.pad.body;
         this.title = res.pad.title;
+        this.workers = res.pad.workers;
+        this.workers.forEach((woker) => {
+          woker.username = res.accounts[woker.account_id] || '暂无姓名_ID:' + woker.account_id;
+        });
         this.renderContent();
       }, (err) => {
         this.$message.error(`初始化文档失败！${err.msg || ''}`);
         this.$router.push('/user');
-      })
+      });
     },
     destroyed() {
 
@@ -234,14 +317,12 @@
   }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
   #editableArea
     display inline !important
     padding .1em 0 .0688em 0
     box-shadow 0 1px 0 deepskyblue
-</style>
 
-<style lang="stylus" scoped>
   #content-layout
     width: 794px;
     min-height: 995px;
@@ -270,28 +351,30 @@
     position fixed
     display flex
     flex-direction column
-    justify-content center
-    align-items center
-    right -80px
-    bottom 4em
-    width 150px
+    justify-content flex-end
+    align-items flex-end
+    right -40px
+    bottom 5em
+    width 200px
     height 400px
     text-align center
-    transition all 200ms ease-in 0s
+    transition all 200ms ease-in 100ms
     &:hover
       right 0
     .btn
       display block
       width 40px
       height 40px
-      zoom 2
-      margin .5em 0 0 0
+      zoom 1.5
+      margin .5em .5em 0 0
+      &:hover
+        zoom 2
 
   #sub_btn_group
     position absolute
     right 2em
     top .75em
-    z-index 999
+
     .tip
       position absolute
       margin-top 1px
@@ -301,16 +384,16 @@
 
   @keyframes flicker
     0%
-      left -4em
+      transform translateX(-4em)
       opacity 0
     30%
-      left -2em
+      transform translateX(-2em)
       opacity 1
     50%
-      left -1.5em
+      transform translateX(-1.5em)
       opacity 0
     100%
-      left -1.5em
+      transform translateX(-1.5em)
       opacity 0
 
 

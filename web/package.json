@@ -11,8 +11,9 @@
   },
   "dependencies": {
     "vue": "^2.5.2",
+    "stompjs": "^2.3.3",
     "vue-router": "^3.0.1",
-    "element-ui":"^2.3.6",
+    "element-ui": "^2.3.6",
     "axios": "^0.18.0"
   },
   "devDependencies": {

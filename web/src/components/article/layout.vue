@@ -9,13 +9,13 @@
     <el-container>
       <!--nav-->
       <el-aside :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}" width="13em">
+        <!--draftArticle-->
+        <el-button class="draftArticle center" size="large" type="primary" icon="el-icon-plus"
+                   @click="draftArticle">
+          新建文章
+        </el-button>
         <el-menu :default-openeds="['myArticles','otherArticles']"
                  :default-active="currentActiveItem">
-          <!--draftArticle-->
-          <el-button class="draftArticle center" size="large" type="primary" icon="el-icon-plus"
-                     @click="draftArticle">
-            新建文章
-          </el-button>
           <!--我的文章-->
           <el-submenu class="submenu" index="myArticles">
             <template slot="title">
@@ -24,7 +24,8 @@
             </template>
             <el-menu-item index="null" disabled v-if="myArticles.length===0"> —— 暂无文章 ——</el-menu-item>
             <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="String(paper.id)"
-                          @click="changeArticle(paper)">
+                          @click="changeArticle(paper)"
+                          :title="paper.title">
               {{paper.title}}
             </el-menu-item>
           </el-submenu>
@@ -50,7 +51,7 @@
       <el-main :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}">
         <!--默认显示的内容-->
         <div v-if="currentArticle.id == null">
-          此处应该写点啥？
+          <p class="placeholder untouchable">← 点击左方文件柜，开始你的协同文档之旅~</p>
         </div>
         <router-view :id="String(currentArticle.id)"
                      :isOwner="currentArticle.share_level==='OWN'"
@@ -66,7 +67,7 @@
       </el-button>
     </el-container>
     <!--footer-->
-    <el-footer class="untouchable" height="3em">
+    <el-footer :class="{'untouchable':true,'show-nav':!navHasHide,'hide-nav':navHasHide}" height="3em">
       Design By Sleaf
     </el-footer>
   </el-container>
@@ -223,14 +224,22 @@
         if (articleID && !this.currentArticle.id) {
           this.$router.push('/user');
         }
+        /*排个序*/
+        this.myArticles.sort((a, b) => a.id > b.id);
+        this.otherArticles.sort((a, b) => a.id > b.id);
       }, (err) => {
+        const h = this.$createElement;
         this.$alert(`${err.msg || ''}`, '初始化失败', {
           center: true,
           showClose: this.$.env === 'development',
           showCancelButton: false,
-          showConfirmButton: false,
+          confirmButtonText: '返回登录',
           closeOnClickModal: false,
           closeOnPressEscape: false
+        }).then((res) => {
+          this.$router.push('/login');
+        }, (err) => {
+          this.$message.warning('哼，居然是开发者');
         });
       }).finally(() => {
         loading.close();
@@ -257,7 +266,10 @@
     .logo
       height 3em
       margin .5em
-      border-radius 1em
+      border-radius 25%
+      transition transform 200ms ease-in-out 0s
+      &:hover
+        transform rotate(-10deg)
 
   .el-aside
     position relative
@@ -266,16 +278,25 @@
     background-color: white
     overflow-x hidden
     transition all 500ms ease-in-out 0s
-    box-shadow 1px 0 5px #757575
+    box-shadow 1px 0 1px #757575 inset
+    background linear-gradient(300deg, white, rgba(155, 180, 200, .33))
+    .el-menu
+      background linear-gradient(-90deg, white 80%, rgba(155, 180, 200, .1))
     .submenu-item
-      box-shadow 1px 1px 1px 1px #e6e6e6
+      background rgba(155, 180, 200, .2)
+      box-shadow 0 1px 0 lightgray
       white-space nowrap
       text-overflow ellipsis
       overflow hidden
+      &:hover
+        zoom 1.2
+        background rgba(160, 200, 255, .33)
+      &:nth-child(1)
+        border-top 1px solid lightgray
 
     .draftArticle
       margin-top 1.5em
-      margin-bottom .5em
+      margin-bottom 1.5em
 
     .btn_logout
       position absolute
@@ -309,11 +330,21 @@
     overflow auto
     display flex
     justify-content center
+    transition all 500ms ease-in-out 0s
+    .placeholder
+      color darkgray
+      font-size 2em
+      transform translateY(20vh)
 
   .el-footer
     background-color: white
     color: #333
-    box-shadow 0 -2px 2px #909090;
+    box-shadow 0 1px 0 lightgray inset
     text-align center
     line-height: 3em
+    transition all 500ms ease-in-out 0s
+    background linear-gradient(60deg, white, rgba(155, 180, 200, .2))
+    &.hide-nav
+      margin-bottom -3em
+      transform translateY(100%)
 </style>

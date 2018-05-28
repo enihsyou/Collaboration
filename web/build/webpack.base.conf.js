@@ -23,9 +23,10 @@ module.exports = {
   },
   externals: {
     "axios": 'axios',
+    "stomp": 'Stomp',
     "vue": 'Vue',
     "vue-router": 'VueRouter',
-    "element-ui": "ELEMENT"
+    "element-ui": "ELEMENT",
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
