@@ -1,20 +1,16 @@
 <template>
   <el-container>
-    <!--title-->
+    <!--header-->
     <el-header height="4em">
       <img class="left logo" src="../../assets/img/img_logo.png" alt="" draggable="false">
       <h1 class="title untouchable">NTM协同文档</h1>
     </el-header>
+    <!--body-->
     <el-container>
       <!--nav-->
-      <!--hideNav-->
-      <el-button id="toggle-nav" :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}"
-                 :icon="navHasHide?'el-icon-arrow-right':'el-icon-arrow-left'"
-                 type="text" @click="toggleNav" circle>
-      </el-button>
       <el-aside :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}" width="13em">
         <el-menu :default-openeds="['myArticles','otherArticles']"
-                 :default-active="currenActiveItem">
+                 :default-active="currentActiveItem">
           <!--draftArticle-->
           <el-button class="draftArticle center" size="large" type="primary" icon="el-icon-plus"
                      @click="draftArticle">
@@ -26,7 +22,8 @@
               <i class="el-icon-document"></i>
               <span>我的文章</span>
             </template>
-            <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="paper.id"
+            <el-menu-item index="null" disabled v-if="myArticles.length===0"> —— 暂无文章 ——</el-menu-item>
+            <el-menu-item class="submenu-item" v-for="paper in myArticles" :key="paper.id" :index="String(paper.id)"
                           @click="changeArticle(paper)">
               {{paper.title}}
             </el-menu-item>
@@ -37,7 +34,8 @@
               <i class="el-icon-tickets"></i>
               <span>我参与的文章</span>
             </template>
-            <el-menu-item class="submenu-item" v-for="paper in otherArticles" :key="paper.id" :index="paper.id"
+            <el-menu-item index="null" disabled v-if="otherArticles.length===0"> —— 暂无文章 ——</el-menu-item>
+            <el-menu-item class="submenu-item" v-for="paper in otherArticles" :key="paper.id" :index="String(paper.id)"
                           @click="changeArticle(paper)">
               {{paper.title}}
             </el-menu-item>
@@ -50,73 +48,167 @@
       </el-aside>
       <!--Main-->
       <el-main :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}">
-        <transition name="el-zoom-in-top" mode="out-in" appear>
-          <router-view :key="currentArticle.id"/>
-        </transition>
+        <!--默认显示的内容-->
+        <div v-if="currentArticle.id == null">
+          此处应该写点啥？
+        </div>
+        <router-view :id="String(currentArticle.id)"
+                     :isOwner="currentArticle.share_level==='OWN'"
+                     :key="currentArticle.id"
+                     @updateTitle="updateTitle"
+                     v-else/>
       </el-main>
+      <!--hideNavBtn-->
+      <el-button id="toggle-nav" :class="{'show-nav':!navHasHide,'hide-nav':navHasHide}"
+                 :icon="navHasHide?'el-icon-arrow-right':'el-icon-arrow-left'"
+                 type="text" @click="toggleNav" circle>
+      </el-button>
     </el-container>
     <!--footer-->
     <el-footer class="untouchable" height="3em">
-      Design By sleaf
+      Design By Sleaf
     </el-footer>
   </el-container>
 </template>
 
 <script>
+  class Article {
+    constructor(id, title, level) {
+      this.id = id;
+      this.title = title;
+      this.share_level = level;
+    }
+  }
+
   export default {
     name: "layout",
     data() {
       return {
-        currenActiveItem: '',
         navHasHide: false,
-        myArticles: [
-          {
-            id: 'some_hex_string',
-            title: '我的文章1'
-          }
-        ],
-        otherArticles: [
-          {
-            id: 'some_hex_string2',
-            title: '他的文章2'
-          }
-        ],
+        myArticles: [],
+        otherArticles: [],
         currentArticle: {}
       }
     },
+    computed: {
+      currentActiveItem() {
+        return this.$route.params.id;
+      }
+    },
     methods: {
+      /*起草新文章*/
       draftArticle() {
-        let random = Math.random().toString(16).slice(8);
-        this.currentArticle = {
-          id: random,
-          title: '我的文章_' + random
-        };
-        this.myArticles.push(this.currentArticle);
-        this.currenActiveItem = random;
-        this.$router.push(`/user/${random}`)
+        this.$prompt('请输入文章标题', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /.{1,20}/,
+          inputErrorMessage: '标题字数应在1~20字之间！'
+        }).then((dialogInfo) => {
+          /*载入动画*/
+          const loading = this.$loading({
+            lock: true,
+            text: '新建文档中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          /*用户输入标题后发送给服务器*/
+          this.$.ajax.post('/pads', JSON.stringify({
+            title: dialogInfo.value
+          })).then((res) => {
+            this.currentArticle = new Article(res.id, dialogInfo.value, 'OWN');
+            this.myArticles.push(this.currentArticle);
+            this.hideNav();
+            this.$router.push(`/user/${res.id}`)
+          }, (err) => {
+            this.$message.error('新建失败！' + err.msg);
+          }).finally(() => {
+            loading.close();
+          });
+        }, (cancel) => {
+          this.$message.info('用户取消新建文章');
+        });
       },
+      /*切换文章页*/
       changeArticle(currentArticle) {
         this.currentArticle = currentArticle;
+        this.hideNav();
         this.$router.push(`/user/${this.currentArticle.id}`);
-        console.log(`跳转到文章：${this.currentArticle.id}:${this.currentArticle.title}`);
+        console.log(`跳转到文章：${this.currentArticle.id}-《${this.currentArticle.title}》`);
       },
+      /*更新了标题*/
+      updateTitle(id, newTitle) {
+        for (let [index, article] of [...this.myArticles, ...this.otherArticles].entries()) {
+          if (article.id === id) {
+            let newArticle = new Article(article.id, newTitle, article.share_level);
+            if (index < this.myArticles.length) {
+              //在我的文章里
+              this.myArticles.splice(index, 1, newArticle)
+            } else {
+              //在其他文章里
+              this.otherArticles.splice(index - this.myArticles.length, 1, newArticle)
+            }
+          }
+        }
+      },
+      /*隐藏了导航栏*/
       hideNav() {
         this.navHasHide = true;
       },
+      /*显示导航栏*/
       showNav() {
         this.navHasHide = false;
       },
+      /*切换显示导航栏*/
       toggleNav() {
         this.navHasHide = !this.navHasHide;
       },
+      /*退出登录*/
       logout() {
         delete sessionStorage.token;
         this.$message.success('登出成功');
         this.$router.push('/login');
       }
     },
+    created() {
+      const loading = this.$loading({
+        lock: true,
+        text: '数据初始化...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      /*从服务器获取账户内文章*/
+      this.$.ajax.get('/pads?level=brief').then((res) => {
+        let articleID = this.$route.params.id;
+        for (let pad of res.pads) {
+          /*文章分类*/
+          if (pad.share_level === 'OWN') {
+            this.myArticles.push(pad);
+          } else {
+            this.otherArticles.push(pad)
+          }
+          /*确认当前文章*/
+          if (articleID === String(pad.id)) {
+            this.currentArticle = pad;
+          }
+        }
+        /*存在id但未找到*/
+        if (articleID && !this.currentArticle.id) {
+          this.$router.push('/user');
+        }
+      }, (err) => {
+        this.$alert(`${err.msg || ''}`, '初始化失败', {
+          center: true,
+          showClose: this.$.env === 'development',
+          showCancelButton: false,
+          showConfirmButton: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false
+        });
+      }).finally(() => {
+        loading.close();
+      })
+    },
     mounted() {
-
     }
   }
 </script>
@@ -132,8 +224,7 @@
     background-color: white
     color: #333
     line-height: 2em
-    box-shadow 0 2px 5px grey
-    z-index 99
+    box-shadow 0 -1px 4px #909090 inset
     overflow hidden
     .logo
       height 3em
@@ -147,9 +238,12 @@
     background-color: white
     overflow-x hidden
     transition all 500ms ease-in-out 0s
-    box-shadow 2px 0 1px #50626e
+    box-shadow 1px 0 5px #757575
     .submenu-item
       box-shadow 1px 1px 1px 1px #e6e6e6
+      white-space nowrap
+      text-overflow ellipsis
+      overflow hidden
 
     .draftArticle
       margin-top 1.5em
@@ -167,7 +261,6 @@
 
   #toggle-nav
     position absolute
-    z-index 99999
     transition all 500ms ease-in-out 0s
     top 6em
     &.hide-nav
@@ -192,9 +285,7 @@
   .el-footer
     background-color: white
     color: #333
-    box-shadow 0 -2px 1px grey;
+    box-shadow 0 -2px 2px #909090;
     text-align center
     line-height: 3em
-    z-index 99
-
 </style>
