@@ -160,7 +160,7 @@ public class CabinetController {
      * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @GetMapping("{padId}/revisions/{revisionId}")
-    public RestResponse fetchPadRevisions(@PathVariable long padId, @PathVariable String revisionId) {
+    public RestResponse fetchPadRevisions(@PathVariable long padId, @PathVariable Long revisionId) {
         final String username = PermissionUtil.currentUsername();
         LOGGER.debug("获取文稿历史状态 [{}] pad: #{} revision: #{}", username, padId, revisionId);
 
@@ -184,7 +184,7 @@ public class CabinetController {
      */
     @PutMapping("{padId}/revisions/{revisionId}/tag")
     public RestResponse addTagToInstant(@PathVariable long padId,
-                                        @PathVariable String revisionId,
+                                        @PathVariable long revisionId,
                                         @RequestBody PadSaveDTO padSaveDTO) {
         final String username = PermissionUtil.currentUsername();
         LOGGER.debug("修改文稿历史状态标签 [{}] pad: #{} revision: #{} tag to: {}", username, padId, revisionId,
@@ -210,7 +210,7 @@ public class CabinetController {
      * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
     @PostMapping("{padId}/revisions")
-    public RestResponse revertPadInstant(@PathVariable long padId, @RequestParam String revision) {
+    public RestResponse revertPadInstant(@PathVariable long padId, @RequestParam Long revision) {
         final String username = PermissionUtil.currentUsername();
         LOGGER.debug("回滚文稿状态 [{}] pad: #{} revision: #{}", username, padId, revision);
 

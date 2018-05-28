@@ -2,7 +2,6 @@ package com.enihsyou.collaboration.server.domain;
 
 import org.hibernate.annotations.Type;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
@@ -32,8 +31,8 @@ public class CoPad extends AbstractPersistable<Long> {
     private CoIndividual belongTo = CoIndividual.DUMMY;
 
     /** 最新的版本号 */
-    @Nullable
-    private String lastRevision;
+    @NotNull
+    private Long lastRevision = 0L;
 
     /** 文稿标题 */
     @NotNull
@@ -97,7 +96,7 @@ public class CoPad extends AbstractPersistable<Long> {
     }
 
     /** 移除一个锁定记录 */
-    public CoPad removeLock(@NotNull final CoLock lock){
+    public CoPad removeLock(@NotNull final CoLock lock) {
         this.locks.remove(lock);
         return this;
     }
@@ -108,76 +107,84 @@ public class CoPad extends AbstractPersistable<Long> {
         return this;
     }
 
-    // public String getRevisionId(){
-    //     for (final CoPadInstant instant : instants) {
-            // instant.getId()
-        // }
-    // }
     ////
     // Getter Setter
     ////
 
+    /** 获取当前文稿的版本号 */
     @NotNull
-    public String getLastRevision() {
+    public Long getLastRevision() {
         return lastRevision;
     }
 
-    public CoPad setLastRevision(@NotNull final String lastRevision) {
+    /** 设置当前文稿的版本号 */
+    public CoPad setLastRevision(@NotNull final Long lastRevision) {
         this.lastRevision = lastRevision;
         return this;
     }
 
+    /** 获取当前文稿的贡献值信息 */
     @NotNull
     public Set<CoBlame> getContributes() {
         return contributes;
     }
 
+    /** 获取当前文稿的历史版本 */
     @NotNull
     public Set<CoPadInstant> getInstants() {
         return instants;
     }
 
+    /** 获取标题 */
     @NotNull
     public String getTitle() {
         return title;
 
     }
 
+    /** 设置标题 */
     public CoPad setTitle(@NotNull final String title) {
         this.title = title;
         return this;
     }
 
+    /** 获取文稿主体 */
     @NotNull
     public String getBody() {
         return body;
     }
 
+    /** 设置文稿主体 */
     public CoPad setBody(@NotNull final String body) {
         this.body = body;
         return this;
     }
 
+    /** 获取锁 */
     @NotNull
     public Set<CoLock> getLocks() {
         return locks;
     }
 
+    /** 获取拥有者 */
     @NotNull
     public CoIndividual getBelongTo() {
         return belongTo;
     }
 
+    /** 设置拥有者 */
     public CoPad setBelongTo(@NotNull final CoIndividual belongTo) {
         this.belongTo = belongTo;
         return this;
     }
 
+    /** 获取参与者 */
     @NotNull
     public Set<CoPadControlBlock> getWorkers() {
         return workers;
     }
 
+    /** 获取创建时间 */
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());

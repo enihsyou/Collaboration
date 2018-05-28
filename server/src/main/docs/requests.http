@@ -142,23 +142,37 @@ Cookie: {{cookie}}
 
 ###
 // Websocket Part
-// todo
 
-// refresh lock status
-POST http://{{host}}/websocket.pad.fetch
-Content-Type: application/json
+// 建立请求
+GET http://{{host}}/websocket
 Cookie: {{cookie}}
+
+###
+// subscribe to specified pad
+// 会往这里发广播
+/topic/pad.{padId}
+
+###
+// 订阅错误
+// 会给产生错误的用户发送错误的响应
+/queue/errors
+
+###
+// 刷新最新文档的状态
+// username是当前进行操作的用户
+/pad.{padId}.fetch
+Content-Type: application/json
 
 {
   "pad_id": 6,
-  "revision_id" :"aaaaaaa"
+  "revision_id" :"aaaaaaa",
+  "username":"123"
 }
 ###
 
 // acquire lock
-POST http://{{host}}/websocket.pad.lock.acquire
+/pad.{padId}.lock.acquire
 Content-Type: application/json
-Cookie: {{cookie}}
 
 {
   "pad_id": 6,
@@ -166,20 +180,22 @@ Cookie: {{cookie}}
   "range": {
     "start": 10,
     "end": 20
-  }
+  },
+  "username":"123"
 }
 ###
+
 // release lock
-POST http://{{host}}/websocket.pad.lock.release
+/pad.{padId}.lock.release
 Content-Type: application/json
-Cookie: {{cookie}}
 
 {
   "pad_id": 6,
-  "revision_id" :"aaaaaaa",
+  "revision_id": "aaaaaaa",
   "lock_id": 19,
   "modified": true,
-  "replacement": "Test Body."
+  "replacement": "Test Body.",
+  "username": "123"
 }
 
 

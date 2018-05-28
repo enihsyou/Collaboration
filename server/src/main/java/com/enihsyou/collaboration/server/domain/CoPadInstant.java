@@ -23,7 +23,7 @@ import static javax.persistence.FetchType.LAZY;
  * 不同用户可能会同时操作同一篇文稿
  */
 @Entity
-public class CoPadInstant extends AbstractPersistable<String> {
+public class CoPadInstant extends AbstractPersistable<Long> {
 
     /** 这个状态属于哪个文稿 */
     @ManyToOne(fetch = LAZY)
@@ -40,7 +40,7 @@ public class CoPadInstant extends AbstractPersistable<String> {
 
     /** 版本号 */
     @NotNull
-    private String revision = "";
+    private Long revision = 0L;
 
     /** 为这个瞬时状态添加的标记 */
     @Nullable
@@ -66,66 +66,78 @@ public class CoPadInstant extends AbstractPersistable<String> {
     // Getter Setter
     ////
 
+    /**获取版本号*/
     @NotNull
-    public String getRevision() {
+    public Long getRevision() {
         return revision;
     }
 
-    public CoPadInstant setRevision(@NotNull final String revision) {
+    /**设置这个历史版本的版本号*/
+    public CoPadInstant setRevision(@NotNull final Long revision) {
         this.revision = revision;
         return this;
     }
 
+    /**获取属于的文稿*/
     @NotNull
     public CoPad getBelongTo() {
         return belongTo;
     }
 
+    /**设置属于的文稿*/
     public CoPadInstant setBelongTo(@NotNull final CoPad belongTo) {
         this.belongTo = belongTo;
         return this;
     }
 
+    /**获取历史记录的标签*/
     @Nullable
     public String getTag() {
         return tag;
     }
 
-    public CoPadInstant setTag(@Nullable final String tag) {
+
+/**设置历史记录的标签*/    public CoPadInstant setTag(@Nullable final String tag) {
         this.tag = tag;
         return this;
     }
 
+    /**获取历史记录的主体*/
     @NotNull
     public String getBody() {
         return body;
     }
 
+    /**设置历史记录的主体*/
     public CoPadInstant setBody(@NotNull final String body) {
         this.body = body;
         return this;
     }
 
+    /**获取贡献值信息*/
     @NotNull
     public Set<CoBlame> getContributes() {
         return contributes;
     }
 
+    /**设置贡献值信息*/
     public CoPadInstant setContributes(@NotNull final Set<CoBlame> contributes) {
         this.contributes = contributes;
         return this;
     }
-
+    /**获取创建时间*/
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
+    /**获取历史版本的创建者*/
     @NotNull
     public CoIndividual getCreatedBy() {
         return createdBy;
     }
 
+    /**设置历史版本的创建者*/
     public CoPadInstant setCreatedBy(@NotNull final CoIndividual createdBy) {
         this.createdBy = createdBy;
         return this;

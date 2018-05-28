@@ -6,9 +6,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+/**
+ * 对{@link CoInviteLink}数据库表操作的DAO
+ */@Repository
 public interface InviteLinkRepository extends JpaRepository<CoInviteLink, String> {
 
+    /** 用id搜索 */
     @NotNull
     default CoInviteLink queryByToken(final String token) {
         return findById(token).orElseThrow(() -> new InviteLinkNotExistException(token));

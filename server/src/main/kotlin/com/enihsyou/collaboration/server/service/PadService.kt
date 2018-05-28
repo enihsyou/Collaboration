@@ -61,7 +61,7 @@ interface PadService {
      * @param padId 获取目标文稿
      * @param revisionId 获取目标版本号
      */
-    fun fetchRevision(padId: Long, revisionId: String): CoPadInstant
+    fun fetchRevision(padId: Long, revisionId: Long): CoPadInstant
 
     /**
      * 用户为历史记录添加标记
@@ -72,7 +72,7 @@ interface PadService {
      */
     fun addTagToInstant(
         padId: Long,
-        revisionId: String,
+        revisionId: Long,
         padSaveDTO: PadSaveDTO
     ): CoPadInstant
 
@@ -84,7 +84,7 @@ interface PadService {
      * @param padId    目标文稿
      * @param revisionId 目标版本号
      */
-    fun revertInstant(padId: Long, revisionId: String): CoPad
+    fun revertInstant(padId: Long, revisionId: Long): CoPad
 
     /**
      * 以指定的暴露等级分享文档给指定用户，创建分享链接

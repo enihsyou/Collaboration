@@ -41,18 +41,21 @@ data class PadSaveDTO(
 //// Websocket DTOs
 data class FetchPadDTO(
     val pad_id: DomainId,
-    val client_revision: RevisionId
+    val client_revision: RevisionId,
+    val username: String
 )
 
 data class LockAcquireDTO(
     val pad_id: DomainId,
     val client_revision: RevisionId,
+    val username: String,
     val range: IntRange
 )
 
 data class LockReleaseDTO(
     val pad_id: DomainId,
     val client_revision: RevisionId,
+    val username: String,
     val lock_id: DomainId,
     val modified: Boolean,
     val replacement: String?

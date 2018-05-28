@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
+/**处理权限相关的业务逻辑*/
 @Service
 class PermissionService(
     private val individualRepository: IndividualRepository
@@ -33,7 +34,9 @@ class PermissionService(
     }
 }
 
+/**处理权限相关的业务逻辑*/
 object PermissionUtil {
+
     @JvmStatic
     private fun authentication(): Authentication? = SecurityContextHolder.getContext().authentication
 

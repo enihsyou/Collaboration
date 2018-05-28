@@ -157,13 +157,13 @@ public class AccountController {
         return RestResponse.ok(ExtensionsKt.toChangePasswordVO(account));
     }
 
-    // /** 找回账户密码 */
-    // @PostMapping("reset")
-    // public RestResponse resetPassword(@RequestParam String username) {
-    //     LOGGER.debug("用户找回密码 username: {}", username);
-    //
-    //     CoIndividual account = accountService.resetPassword(username);
-    //
-    //     return RestResponse.ok(ExtensionsKt.toResetPasswordVO(account));
-    // }
+    /** 找回账户密码 */
+    @PostMapping("reset")
+    public RestResponse resetPassword(@RequestParam String username) {
+        LOGGER.debug("用户找回密码 username: {}", username);
+
+        CoIndividual account = accountService.resetPassword(username);
+
+        return RestResponse.ok(ExtensionsKt.toResetPasswordVO(account));
+    }
 }

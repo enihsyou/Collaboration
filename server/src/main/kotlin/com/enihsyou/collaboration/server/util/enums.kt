@@ -3,6 +3,7 @@ package com.enihsyou.collaboration.server.util
 import com.enihsyou.collaboration.server.domain.CoLinkStatus
 import com.enihsyou.collaboration.server.pojo.WrongArgumentException
 
+/**详细等级*/
 enum class DetailLevel(
     val string: String
 ) {
@@ -28,6 +29,7 @@ enum class DetailLevel(
     }
 }
 
+/**分享等级*/
 enum class ShareLevel(
     val string: String
 ) {
