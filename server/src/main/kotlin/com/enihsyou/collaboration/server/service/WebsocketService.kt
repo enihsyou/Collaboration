@@ -16,6 +16,6 @@ interface WebsocketService {
     /**用户获取文稿的编辑🔒 */
     fun acquireLock(lockAcquireDTO: LockAcquireDTO, account: CoIndividual): CoLock
 
-    /** 用户释放文稿的编辑🔒  */
+    /** 用户释放文稿的编辑🔒 */
     fun releaseLock(lockReleaseDTO: LockReleaseDTO, account: CoIndividual): CoPad
 }

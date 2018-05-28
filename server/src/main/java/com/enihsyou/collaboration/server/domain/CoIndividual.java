@@ -61,52 +61,61 @@ public class CoIndividual extends AbstractPersistable<Long> {
     // Getter Setter
     ////
 
+    /** 获取用户名 */
     @NotNull
     public String getUsername() {
         return username;
     }
 
+    /** 设置用户名 */
     public CoIndividual setUsername(@NotNull final String username) {
         this.username = username;
         return this;
     }
 
+    /** 获取加密后的密码 */
     @NotNull
     public String getPassword() {
         return password;
     }
 
+    /** 设置加密后的密码 */
     public CoIndividual setPassword(@NotNull final String password) {
         this.password = password;
         return this;
     }
 
+    /** 获取用户邮箱 */
     @Nullable
     public String getEmailAddress() {
         return emailAddress;
     }
 
+    /** 设置用户邮箱 */
     public CoIndividual setEmailAddress(@Nullable final String emailAddress) {
         this.emailAddress = emailAddress;
         return this;
     }
 
+    /** 获取用户所有的文稿 */
     @NotNull
     public Set<CoPadControlBlock> getPads() {
         return pads;
     }
 
-
+    /** 获取用户创建时间 */
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
+    /** 获取找回密码令牌 */
     @Nullable
     public String getResetPasswordToken() {
         return resetPasswordToken;
     }
 
+    /** 设置找回密码令牌 */
     public CoIndividual setResetPasswordToken(@Nullable final String resetPasswordToken) {
         this.resetPasswordToken = resetPasswordToken;
         return this;

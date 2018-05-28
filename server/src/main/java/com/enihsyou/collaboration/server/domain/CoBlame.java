@@ -106,21 +106,25 @@ public class CoBlame extends AbstractPersistable<Long> {
     // Getter Setter
     ////
 
+    /**获取文稿*/
     @NotNull
     public CoPad getPad() {
         return pad;
     }
 
+    /**设置隶属文稿*/
     public CoBlame setPad(@NotNull final CoPad pad) {
         this.pad = pad;
         return this;
     }
 
+    /**获取创建时间*/
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ConstKt.SYSTEM_ZONE);
     }
 
+    /**重置创建时间*/
     public CoBlame setCreatedTime(@NotNull final LocalDateTime createdTime) {
         this.createdTime = createdTime.atZone(ConstKt.SYSTEM_ZONE).toInstant();
         return this;

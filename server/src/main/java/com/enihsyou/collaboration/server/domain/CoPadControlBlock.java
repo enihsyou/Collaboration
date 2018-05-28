@@ -18,7 +18,7 @@ import static javax.persistence.EnumType.STRING;
 import static javax.persistence.FetchType.LAZY;
 
 /**
- * 代表文件柜[CoCabinet]和文稿[CoPad]之间链接的相关信息
+ * 代表文件柜和文稿之间链接的相关信息
  * 实际作用是将用户的文件柜和独立的文稿连接起来，
  * 这篇文稿可能是自己创建的，也可能是别人邀请用户加入的
  */
@@ -51,40 +51,47 @@ public class CoPadControlBlock {
     // Getter Setter
     ////
 
+    /** 获取用户 */
     @NotNull
     public CoIndividual getIndividual() {
         return individual;
     }
 
+    /** 设置用户 */
     public CoPadControlBlock setIndividual(@NotNull final CoIndividual individual) {
         this.individual = individual;
         individual.addPad(this);
         return this;
     }
 
+    /** 获取文稿 */
     @NotNull
     public CoPad getPad() {
         return pad;
     }
 
+    /** 设置文稿 */
     public CoPadControlBlock setPad(@NotNull final CoPad pad) {
         this.pad = pad;
         return this;
     }
 
+    /** 获取链接状态 */
     @NotNull
     public CoLinkStatus getStatus() {
         return status;
     }
 
+    /** 设置链接状态 */
     public CoPadControlBlock setStatus(@NotNull final CoLinkStatus status) {
         this.status = status;
         return this;
     }
 
+    /** 获取创建时间 */
     @NotNull
     public LocalDateTime getCreatedTime() {
-        return  LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
+        return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
     }
 
     @Override
@@ -92,18 +99,13 @@ public class CoPadControlBlock {
         return hash(individual, pad);
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        final CoPadControlBlock that = (CoPadControlBlock) o;
-        return Objects.equals(individual, that.individual) && Objects.equals(pad, that.pad);
-    }
-
+    /** 主键帮助类 */
     public static class PK implements Serializable {
 
+        /** 用户id */
         Long individual;
 
+        /** 文稿id */
         Long pad;
 
         @Override
@@ -119,6 +121,14 @@ public class CoPadControlBlock {
 
             return hash(individual, pad);
         }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final CoPadControlBlock that = (CoPadControlBlock) o;
+        return Objects.equals(individual, that.individual) && Objects.equals(pad, that.pad);
     }
 }
 

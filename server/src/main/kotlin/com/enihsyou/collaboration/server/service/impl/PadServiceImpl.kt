@@ -75,7 +75,7 @@ class PadServiceImpl(
         padRepository.deleteById(padId)
     }
 
-    override fun fetchRevision(padId: Long, revisionId: String): CoPadInstant {
+    override fun fetchRevision(padId: Long, revisionId: Long): CoPadInstant {
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 
@@ -85,7 +85,7 @@ class PadServiceImpl(
 
     override fun addTagToInstant(
         padId: Long,
-        revisionId: String,
+        revisionId: Long,
         padSaveDTO: PadSaveDTO
     ): CoPadInstant {
         val (tag) = padSaveDTO
@@ -101,10 +101,10 @@ class PadServiceImpl(
         return instant
     }
 
-    override fun revertInstant(padId: Long, revisionId: String): CoPad {
+    override fun revertInstant(padId: Long, revisionId: Long): CoPad {
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
-        val revert = pad.instants.firstOrNull { it.id == revisionId }
+        val revert = pad.instants.firstOrNull { it.revision == revisionId }
             ?: throw InstantNotExistException(padId, revisionId)
 
         /*重设数据*/

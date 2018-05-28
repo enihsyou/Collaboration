@@ -30,7 +30,7 @@ class BadCredentialsException(username: String):
 class PadNotExistException(padId: Long) :
     RestRuntimeException(202, "文稿 [$padId] 不存在")
 
-class InstantNotExistException(padId: Long, revisionId: String) :
+class InstantNotExistException(padId: Long, revisionId: Long) :
     RestRuntimeException(203, "历史记录 [$padId#$revisionId] 不存在")
 
 class InviteLinkNotExistException(token: String) :

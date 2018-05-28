@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+/**
+ * 对{@link CoPad}数据库表操作的DAO
+ */@Repository
 public interface PadRepository extends JpaRepository<CoPad, Long> {
 
 

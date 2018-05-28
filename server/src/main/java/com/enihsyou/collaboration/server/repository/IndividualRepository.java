@@ -6,7 +6,9 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+/**
+ * 对{@link CoIndividual}数据库表操作的DAO
+ */@Repository
 public interface IndividualRepository extends JpaRepository<CoIndividual, Long> {
 
     /** 用用户名搜索 */

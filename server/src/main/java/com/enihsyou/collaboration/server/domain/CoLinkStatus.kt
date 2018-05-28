@@ -1,5 +1,6 @@
 package com.enihsyou.collaboration.server.domain
 
+/**邀请链接的等级权限*/
 enum class CoLinkStatus {
     /**用户拥有这篇文稿*/
     OWN,

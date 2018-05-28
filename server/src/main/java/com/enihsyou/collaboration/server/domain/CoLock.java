@@ -119,16 +119,19 @@ public class CoLock extends AbstractPersistable<Long> {
     // Getter Setter
     ////
 
+    /** 获取锁定的文稿 */
     @NotNull
     public CoPad getPad() {
         return pad;
     }
 
+    /** 设置锁定的文稿 */
     public CoLock setPad(@NotNull final CoPad pad) {
         this.pad = pad;
         return this;
     }
 
+    /** 获取创建时间 */
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
