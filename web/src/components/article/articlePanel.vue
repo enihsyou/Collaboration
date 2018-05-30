@@ -163,28 +163,36 @@
         const rawStartOffset = rangeMatch.index;
         const startOffset = tmpContent.slice(0, rawStartOffset).replace(/<br>/gm, '\n').length;
         const endOffset = startOffset + rangeMatch[1].replace(/<br>/gm, '\n').length;
-        //清除临时选择标签
-        this.renderContent(content.innerHTML.replace(/<div[^>]+>(.*)<\/div>/igm, "$1"));
-        rangeArea.innerHTML = '';
-        document.getElementsByTagName('body')[0].appendChild(rangeArea);
+        //显示载入动画
+        const loading = this.$loading({
+          lock: true,
+          text: '向服务器申请修改...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
         //向服务器申请加锁
-        this.webSocketClient.sendMsg('/websocket.pad.lock.acquire', JSON.stringify({
+        this.$.ajax.post('/websocket.pad.lock.acquire', JSON.stringify({
           pad_id: this.id,
           revision_id: this.current_revision,
           range: {
             start: startOffset,
             end: endOffset
           }
-        }));
-        //fixme 选区被清
-        //保存当前文本内容
-        this.savedContent = this.content;
-        //转化当前区域为可编辑
-        let editableArea = this.$refs.editableArea;
-        this.range.surroundContents(editableArea);
-        editableArea.focus();
-        this.callBtn = false;
-        this.trySaveCount = 0;
+        })).then((res) => {
+          //保存当前文本内容
+          this.savedContent = this.content;
+          //转化当前区域为可编辑
+          let editableArea = this.$refs.editableArea;
+          this.range.surroundContents(editableArea);
+          editableArea.focus();
+          this.callBtn = false;
+          this.trySaveCount = 0;
+        }, (err) => {
+          this.$message.error('申请修改失败：' + err.msg);
+        }).finally(() => {
+          loading.close();
+        });
+
       },
       /*提交修改后的内容*/
       subContent() {
@@ -223,10 +231,13 @@
       /*清除可编辑栏*/
       clearRange() {
         let editContentElem = this.$refs.editableArea;
+        let rangeArea = this.$refs.rangeArea;
         let content = this.$refs.content.innerHTML;
         this.renderContent(content.replace(/<div[^>]+>(.*)<\/div>/igm, "$1"));
         editContentElem.innerHTML = '';
+        rangeArea.innerHTML = '';
         document.getElementsByTagName('body')[0].appendChild(editContentElem);
+        document.getElementsByTagName('body')[0].appendChild(rangeArea);
         this.range = null;
       },
       /*从文本渲染到html页面*/
@@ -328,11 +339,11 @@
     min-height: 995px;
     background-color white
     box-shadow 2px 2px .3em 2px grey
-    cursor text
     overflow: hidden
     margin 1em 0 2em 0
 
     .inner
+      cursor text
       margin 4em
       &:before
         display block
