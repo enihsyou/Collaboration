@@ -150,13 +150,13 @@ fun CoInviteLink.toCreateVO(): Any = mapOf(
 )
 
 fun CoPad.socketPadFetchVO(): Any {
-    return object {}
+    return this.toDetailVO()
 }
 
 fun CoPad.socketLockReleasedVO(): Any {
-    return object {}
+    return this.toDetailVO()
 }
 
 fun CoLock.socketLockAcquireVO(): Any {
-    return object {}
+    return this.toDetailVO()
 }

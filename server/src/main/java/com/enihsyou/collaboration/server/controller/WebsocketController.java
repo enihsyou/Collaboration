@@ -21,10 +21,10 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /** 处理前后端在文档和🔒更新上的交互 */
 @Controller
@@ -133,7 +133,8 @@ public class WebsocketController {
 
 
     /** 刷新获取最新状态 */
-    @GetMapping("/pad.{padId}.fetch")
+    @PostMapping("/pad.{padId}.fetch")
+    @ResponseBody
     public RestResponse httpFetchPadStatus(@PathVariable Long padId, @RequestBody FetchPadDTO fetchPadDTO) {
         final String username = fetchPadDTO.getUsername();
         LOGGER.debug("http 获取文稿状态 [{}] pad: #{} revision: {}", username, fetchPadDTO.getPad_id(),
@@ -153,6 +154,7 @@ public class WebsocketController {
      * @throws com.enihsyou.collaboration.server.pojo.RangeCollapsedException 锁定范围有重叠
      */
     @PostMapping("/pad.{padId}.lock.acquire")
+    @ResponseBody
     public RestResponse httpAcquirePadLock(@PathVariable Long padId, @RequestBody LockAcquireDTO lockAcquireDTO) {
         final String username = lockAcquireDTO.getUsername();
         LOGGER.debug("http 尝试获取文稿🔒 [{}] pad: #{} revision: {} range: {}", username, lockAcquireDTO.getPad_id(),
@@ -174,6 +176,7 @@ public class WebsocketController {
      * 如果有修改，需要同时给出修改后的结果
      */
     @PostMapping("/pad.{padId}.lock.release")
+    @ResponseBody
     public RestResponse httpReleasePadLock(@PathVariable Long padId, @RequestBody LockReleaseDTO lockReleaseDTO) {
         final String username = lockReleaseDTO.getUsername();
         LOGGER.debug("http 释放文稿🔒 [{}] pad: #{} revision: {} lock_id: {} modified: {}", username,
