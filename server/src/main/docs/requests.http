@@ -161,27 +161,34 @@ Cookie: {{cookie}}
 ###
 // 刷新最新文档的状态
 // username是当前进行操作的用户
-POST http://{{host}}/api/pad.{padId}.fetch
+POST http://{{host}}/pad.{{padId}}.fetch
+Content-Type: application/json
+
+{
+  "pad_id": 6,
+  "client_revision" : 0,
+  "username":"123"
+}
 ###
 /pad.{padId}.fetch
 Content-Type: application/json
 
 {
   "pad_id": 6,
-  "revision_id" : 3,
+  "client_revision" : 3,
   "username":"123"
 }
 ###
 
 // acquire lock
-POST http://{{host}}/api/pad.{padId}.lock.acquire
+POST http://{{host}}/pad.{{padId}}.lock.acquire
 ###
 /pad.{padId}.lock.acquire
 Content-Type: application/json
 
 {
   "pad_id": 6,
-  "revision_id" : 3,
+  "client_revision" : 3,
   "range": {
     "start": 10,
     "end": 20
@@ -191,14 +198,14 @@ Content-Type: application/json
 ###
 
 // release lock
-POST http://{{host}}/api/pad.{padId}.lock.release
+POST http://{{host}}/pad.{{padId}}.lock.release
 ###
 /pad.{padId}.lock.release
 Content-Type: application/json
 
 {
   "pad_id": 6,
-  "revision_id": 3,
+  "client_revision": 3,
   "lock_id": 19,
   "modified": true,
   "replacement": "Test Body.",
