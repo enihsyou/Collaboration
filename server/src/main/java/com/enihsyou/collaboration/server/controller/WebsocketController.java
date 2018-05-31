@@ -8,6 +8,7 @@ import com.enihsyou.collaboration.server.pojo.FetchPadDTO;
 import com.enihsyou.collaboration.server.pojo.LockAcquireDTO;
 import com.enihsyou.collaboration.server.pojo.LockReleaseDTO;
 import com.enihsyou.collaboration.server.pojo.RestResponse;
+import com.enihsyou.collaboration.server.service.AccountService;
 import com.enihsyou.collaboration.server.service.PermissionService;
 import com.enihsyou.collaboration.server.service.WebsocketService;
 import org.slf4j.Logger;
@@ -20,6 +21,10 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /** 处理前后端在文档和🔒更新上的交互 */
 @Controller
@@ -28,7 +33,10 @@ public class WebsocketController {
     /** 日志记录器 */
     private static final Logger LOGGER = LoggerFactory.getLogger(WebsocketController.class);
 
-    /** 进行用户权限控制 */
+    /** 进行用户信息获取 */
+    private final AccountService accountService;
+
+    /** 进行用户信息获取 */
     private final PermissionService permissionService;
 
     /** 执行Websocket相关逻辑操作 */
@@ -38,9 +46,11 @@ public class WebsocketController {
     private final SimpMessageSendingOperations template;
 
     /** Autowired 依赖注入构造器 */
-    public WebsocketController(final PermissionService permissionService,
+    public WebsocketController(final AccountService accountService,
+                               final PermissionService permissionService,
                                final WebsocketService websocketService,
                                final SimpMessageSendingOperations template) {
+        this.accountService = accountService;
         this.permissionService = permissionService;
         this.websocketService = websocketService;
         this.template = template;
@@ -55,13 +65,11 @@ public class WebsocketController {
 
     /** 刷新获取最新状态 */
     @MessageMapping("/pad.{padId}.fetch")
-    @SendToUser("/pad.{padId}")
+    @SendToUser("/topic/pad.{padId}")
     public RestResponse fetchPadStatus(@DestinationVariable Long padId, @Payload FetchPadDTO fetchPadDTO) {
         final String username = fetchPadDTO.getUsername();
         LOGGER.debug("websocket 获取文稿状态 [{}] pad: #{} revision: {}", username, fetchPadDTO.getPad_id(),
             fetchPadDTO.getClient_revision());
-
-        final CoIndividual account = permissionService.loggedAccount();
 
         CoPad pad = websocketService.fetchStatus(fetchPadDTO);
 
@@ -77,10 +85,77 @@ public class WebsocketController {
      * @throws com.enihsyou.collaboration.server.pojo.RangeCollapsedException 锁定范围有重叠
      */
     @MessageMapping("/pad.{padId}.lock.acquire")
-    @SendToUser("/pad.{padId}")
+    @SendToUser("/topic/pad.{padId}")
     public RestResponse acquirePadLock(@DestinationVariable Long padId, @Payload LockAcquireDTO lockAcquireDTO) {
         final String username = lockAcquireDTO.getUsername();
-        LOGGER.debug("尝试获取文稿🔒 [{}] pad: #{} revision: {} range: {}", username, lockAcquireDTO.getPad_id(),
+        LOGGER.debug("websocket 尝试获取文稿🔒 [{}] pad: #{} revision: {} range: {}", username, lockAcquireDTO.getPad_id(),
+            lockAcquireDTO.getClient_revision(), lockAcquireDTO.getRange());
+
+        final CoIndividual account = accountService.previewAccount(username);
+
+        assert account != null;
+        CoLock lock = websocketService.acquireLock(lockAcquireDTO, account);
+
+        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockAcquireVO(lock));
+        template.convertAndSend("/pad." + padId, payload.getMsg());
+        return payload;
+    }
+
+    /**
+     * 释放文稿的一个🔒
+     *
+     * 需要提供🔒的id和用户当前文稿号和版本号，以及是否有修改。
+     * 如果有修改，需要同时给出修改后的结果
+     */
+    @MessageMapping("/pad.{padId}.lock.release")
+    @SendToUser("/topic/pad.{padId}")
+    public RestResponse releasePadLock(@DestinationVariable Long padId, @Payload LockReleaseDTO lockReleaseDTO) {
+        final String username = lockReleaseDTO.getUsername();
+        LOGGER.debug("websocket 释放文稿🔒 [{}] pad: #{} revision: {} lock_id: {} modified: {}", username,
+            lockReleaseDTO.getPad_id(),
+            lockReleaseDTO.getClient_revision(), lockReleaseDTO.getLock_id(), lockReleaseDTO.getModified());
+        final CoIndividual account = permissionService.loggedAccount();
+
+        CoPad pad = websocketService.releaseLock(lockReleaseDTO, account);
+
+        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(pad));
+        template.convertAndSend("/pad." + padId, payload.getMsg());
+        return payload;
+    }
+
+    /** 异常处理 */
+    @MessageExceptionHandler
+    @SendToUser(destinations = "/queue/errors", broadcast = false)
+    public String handleException(Throwable exception) {
+        exception.printStackTrace();
+        return exception.getMessage();
+    }
+
+
+    /** 刷新获取最新状态 */
+    @GetMapping("/pad.{padId}.fetch")
+    public RestResponse httpFetchPadStatus(@PathVariable Long padId, @RequestBody FetchPadDTO fetchPadDTO) {
+        final String username = fetchPadDTO.getUsername();
+        LOGGER.debug("http 获取文稿状态 [{}] pad: #{} revision: {}", username, fetchPadDTO.getPad_id(),
+            fetchPadDTO.getClient_revision());
+
+        CoPad pad = websocketService.fetchStatus(fetchPadDTO);
+
+        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketPadFetchVO(pad));
+        return payload;
+    }
+
+    /**
+     * 申请一篇文稿的🔒
+     *
+     * 需要提供文稿号和客户端当前的版本号，以及需要锁定的位置。
+     *
+     * @throws com.enihsyou.collaboration.server.pojo.RangeCollapsedException 锁定范围有重叠
+     */
+    @PostMapping("/pad.{padId}.lock.acquire")
+    public RestResponse httpAcquirePadLock(@PathVariable Long padId, @RequestBody LockAcquireDTO lockAcquireDTO) {
+        final String username = lockAcquireDTO.getUsername();
+        LOGGER.debug("http 尝试获取文稿🔒 [{}] pad: #{} revision: {} range: {}", username, lockAcquireDTO.getPad_id(),
             lockAcquireDTO.getClient_revision(), lockAcquireDTO.getRange());
 
         final CoIndividual account = permissionService.loggedAccount();
@@ -98,12 +173,13 @@ public class WebsocketController {
      * 需要提供🔒的id和用户当前文稿号和版本号，以及是否有修改。
      * 如果有修改，需要同时给出修改后的结果
      */
-    @MessageMapping("/pad.{padId}.lock.release")
-    @SendToUser("/pad.{padId}")
-    public RestResponse releasePadLock(@DestinationVariable Long padId, @Payload LockReleaseDTO lockReleaseDTO) {
+    @PostMapping("/pad.{padId}.lock.release")
+    public RestResponse httpReleasePadLock(@PathVariable Long padId, @RequestBody LockReleaseDTO lockReleaseDTO) {
         final String username = lockReleaseDTO.getUsername();
-        LOGGER.debug("释放文稿🔒 [{}] pad: #{} revision: {} lock_id: {} modified: {}", username, lockReleaseDTO.getPad_id(),
+        LOGGER.debug("http 释放文稿🔒 [{}] pad: #{} revision: {} lock_id: {} modified: {}", username,
+            lockReleaseDTO.getPad_id(),
             lockReleaseDTO.getClient_revision(), lockReleaseDTO.getLock_id(), lockReleaseDTO.getModified());
+
         final CoIndividual account = permissionService.loggedAccount();
 
         CoPad pad = websocketService.releaseLock(lockReleaseDTO, account);
@@ -111,14 +187,6 @@ public class WebsocketController {
         final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(pad));
         template.convertAndSend("/pad." + padId, payload.getMsg());
         return payload;
-    }
-
-    /** 异常处理 */
-    @MessageExceptionHandler
-    @SendToUser(destinations = "/queue/errors", broadcast = false)
-    public String handleException(Throwable exception) {
-        exception.printStackTrace();
-        return exception.getMessage();
     }
 }
 
