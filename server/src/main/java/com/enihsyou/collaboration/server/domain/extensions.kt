@@ -72,13 +72,14 @@ fun CoPad.toCreateVO(): Any = mapOf(
 )
 
 fun CoPad.toDetailVO(): Any {
-    val accounts = (contributes.map { it.contributor } + workers.map { it.individual }).toSet()
+    val accounts = (contributes.map { it.contributor } + workers.map { it.individual }).groupBy { it.id as Long }
 
     val padInformation = mapOf(
         "id" to id,
         "title" to title,
         "body" to body,
         "owner" to belongTo.username,
+        "current_revision" to lastRevision,
         "created_time" to createdTime,
         "instants" to instants.map { id },
         "is_locked" to isLocked,
@@ -89,7 +90,15 @@ fun CoPad.toDetailVO(): Any {
 
     return mapOf(
         "pad" to padInformation,
-        "accounts" to accounts.map { it.toLoginVO() }
+        "accounts" to accounts.mapValues { (_, value) ->
+            value.firstOrNull()?.let {
+                mapOf(
+                    "username" to it.username,
+                    "email_address" to it.emailAddress,
+                    "created_time" to createdTime
+                )
+            }
+        }
     )
 }
 
