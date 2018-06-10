@@ -35,7 +35,7 @@
       <div class="groupMemberItem" v-for="person in workers" :key="person.id">
         <div class="groupList">
           <span>
-            {{person.username}}
+            {{person.username.username}}
             <span class="right" style="width: 8em;text-align: center"
                   v-if="person.share_level==='OWN'">
               【拥有者】

@@ -91,6 +91,8 @@
           username: this.username,
           password: this.password
         })).then((res) => {
+            sessionStorage.username = res.username;
+            sessionStorage.email_address = res.email_address;
             this.$message.success('登录成功');
             this.$router.push(this.$route.query.redirect || '/user');
           }, (err) => {

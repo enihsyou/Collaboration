@@ -94,6 +94,7 @@
       return {
         workers: [],
         current_revision: -1,
+        current_lock_id: -1,
         title: '',
         content: '',
         savedContent: '',
@@ -121,8 +122,9 @@
           mod_btn.style.top = `calc(${e.clientY}px - 3em)`;
           return;
         }
-        if (this.content.length < 1 || this.$refs.editableArea.innerHTML.length < 1) {
+        if (this.$refs.editableArea.innerHTML.length < 1) {
           this.$refs.editableArea.focus();
+          //fixme 某些情况下会跳转到界限外的区域
         }
         //用户点击编辑框外尝试保存
         this.trySaveCount = e.target.id !== 'editableArea' ? this.trySaveCount + 1 : 0;
@@ -171,14 +173,16 @@
           background: 'rgba(0, 0, 0, 0.7)'
         });
         //向服务器申请加锁
-        this.$.ajax.post('/websocket.pad.lock.acquire', JSON.stringify({
+        this.$.ajax.post(`/pad.${this.id}.lock.acquire`, JSON.stringify({
           pad_id: this.id,
-          revision_id: this.current_revision,
+          username: sessionStorage.username,
+          client_revision: this.current_revision,
           range: {
             start: startOffset,
             end: endOffset
           }
         })).then((res) => {
+          this.current_lock_id = res.lock_id;
           //保存当前文本内容
           this.savedContent = this.content;
           //转化当前区域为可编辑
@@ -196,10 +200,29 @@
       },
       /*提交修改后的内容*/
       subContent() {
-        //提交修改的按钮
-        //todo 假装向服务器申请提交修改
-        //清除编辑区
-        this.clearRange();
+        //提交修改
+        const loading = this.$loading({
+          lock: true,
+          text: '提交修改...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        this.$.ajax.post(`/pad.${this.id}.lock.release`, JSON.stringify({
+          pad_id: this.id,
+          client_revision: this.current_revision,
+          lock_id: this.current_lock_id,
+          modified: true,
+          replacement: this.$refs.editableArea.innerHTML,
+          username: sessionStorage.username
+        })).then(res => {
+          this.$message.success('提交修改成功！');
+          //清除编辑区
+          this.clearRange();
+        }, err => {
+          this.$message.error('提交修改失败!');
+        }).finally(_ => {
+          loading.close();
+        });
       },
       /*取消修改，返回到上个版本*/
       cancelSubContent() {
@@ -211,10 +234,29 @@
           closeOnClickModal: false,
           closeOnPressEscape: false
         }).then((res) => {
-          //清除编辑区
-          this.clearRange();
-          this.renderContent(this.savedContent);
-          this.$message.warning('已恢复编辑前的内容');
+          const loading = this.$loading({
+            lock: true,
+            text: '撤销修改...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+          this.$.ajax.post(`/pad.${this.id}.lock.release`, JSON.stringify({
+            pad_id: this.id,
+            client_revision: this.current_revision,
+            lock_id: this.current_lock_id,
+            modified: false,
+            replacement: '',
+            username: sessionStorage.username
+          })).then(res => {
+            //清除编辑区
+            this.clearRange();
+            this.renderContent(this.savedContent);
+            this.$message.warning('已恢复编辑前的内容');
+          }, err => {
+            this.$message.error('撤销修改失败!');
+          }).finally(_ => {
+            loading.close();
+          });
         }, (err) => {
           // this.$message.info('请继续编辑');
         });
@@ -330,9 +372,10 @@
 
 <style lang="stylus" scoped>
   #editableArea
-    display inline !important
+    display inline-block !important
     padding .1em 0 .0688em 0
     box-shadow 0 1px 0 deepskyblue
+    min-width .5em
 
   #content-layout
     width: 794px;
@@ -341,10 +384,10 @@
     box-shadow 2px 2px .3em 2px grey
     overflow: hidden
     margin 1em 0 2em 0
-
     .inner
-      cursor text
       margin 4em
+      cursor text
+      word-break break-all
       &:before
         display block
         margin-left -2.5em
@@ -362,14 +405,14 @@
     position fixed
     display flex
     flex-direction column
-    justify-content flex-end
+    justify-content center
     align-items flex-end
     right -40px
-    bottom 5em
-    width 200px
-    height 400px
+    bottom -10vh
+    width 30vw
+    height 50vh
     text-align center
-    transition all 200ms ease-in 100ms
+    transition all 100ms ease-in 100ms
     &:hover
       right 0
     .btn

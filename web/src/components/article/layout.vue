@@ -347,4 +347,5 @@
     &.hide-nav
       margin-bottom -3em
       transform translateY(100%)
+
 </style>
