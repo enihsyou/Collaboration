@@ -24,6 +24,13 @@ export default {
             title: '测试stomp',
           },
           component: (resolve) => require(['./components/test/stomp'], resolve)
+        },
+        {
+          path: 'dice',
+          meta: {
+            title: '给脐橙扔骰子',
+          },
+          component: (resolve) => require(['./components/test/dice'], resolve)
         }
       ]
     },

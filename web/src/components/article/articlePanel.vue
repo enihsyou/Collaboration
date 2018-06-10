@@ -36,7 +36,7 @@
                  @click="shareArticle" circle></el-button>
     </div>
     <div id="editableArea" ref="editableArea" contenteditable v-show="range"></div>
-    <div id="rangeArea" style="display: inline" ref="rangeArea"></div>
+    <div id="rangeArea" style="display: inline-block" ref="rangeArea"></div>
     <div class="cursor"></div>
   </div>
 </template>
@@ -129,12 +129,13 @@
         //用户点击编辑框外尝试保存
         this.trySaveCount = e.target.id !== 'editableArea' ? this.trySaveCount + 1 : 0;
       },
-      /*点击插入/修改后的操作*/
+      /*点击[插入]/[修改]后的操作*/
       modContent() {
         //保存当前range
         const selection = window.getSelection ? window.getSelection() : document.getSelection();
         if (!selection.rangeCount) return;
         const content = this.$refs.content;
+        const editableArea = this.$refs.editableArea;
         //空文本的情况
         if (this.content.length < 1) {
           let newRange = document.createRange();
@@ -156,6 +157,7 @@
             break
           }
         }
+        console.log(this.range);
         //给文段加个临时选择标签
         let rangeArea = this.$refs.rangeArea;
         this.range.surroundContents(rangeArea);
@@ -165,6 +167,11 @@
         const rawStartOffset = rangeMatch.index;
         const startOffset = tmpContent.slice(0, rawStartOffset).replace(/<br>/gm, '\n').length;
         const endOffset = startOffset + rangeMatch[1].replace(/<br>/gm, '\n').length;
+        //清除临时选择标签
+        // const Reg = /<div[^>]+>(.*)<\/div>/igm;
+        // while (Reg.test(content.innerHTML)) {
+        //   content.innerHTML = content.innerHTML.replace(Reg, "$1");
+        // }
         //显示载入动画
         const loading = this.$loading({
           lock: true,
@@ -186,13 +193,16 @@
           //保存当前文本内容
           this.savedContent = this.content;
           //转化当前区域为可编辑
-          let editableArea = this.$refs.editableArea;
           this.range.surroundContents(editableArea);
           editableArea.focus();
+          //清除临时选择标签
+          for (const elem of editableArea.childNodes) editableArea.removeChild(elem)
           this.callBtn = false;
           this.trySaveCount = 0;
         }, (err) => {
           this.$message.error('申请修改失败：' + err.msg);
+          this.range = null;
+          for (const elem of content.childNodes) content.removeChild(elem)
         }).finally(() => {
           loading.close();
         });
@@ -212,7 +222,7 @@
           client_revision: this.current_revision,
           lock_id: this.current_lock_id,
           modified: true,
-          replacement: this.$refs.editableArea.innerHTML,
+          replacement: text,
           username: sessionStorage.username
         })).then(res => {
           this.$message.success('提交修改成功！');
@@ -275,7 +285,9 @@
         let editContentElem = this.$refs.editableArea;
         let rangeArea = this.$refs.rangeArea;
         let content = this.$refs.content.innerHTML;
-        this.renderContent(content.replace(/<div[^>]+>(.*)<\/div>/igm, "$1"));
+        const Reg = /<div[^>]+>(.*)<\/div>/igm;
+        while (Reg.test(content)) content = content.replace(Reg, "$1");
+        this.renderContent(content.replace(/<br>/gm, '\n'));
         editContentElem.innerHTML = '';
         rangeArea.innerHTML = '';
         document.getElementsByTagName('body')[0].appendChild(editContentElem);
