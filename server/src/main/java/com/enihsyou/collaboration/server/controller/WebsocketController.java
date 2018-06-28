@@ -116,9 +116,9 @@ public class WebsocketController {
             lockReleaseDTO.getClient_revision(), lockReleaseDTO.getLock_id(), lockReleaseDTO.getModified());
         final CoIndividual account = permissionService.loggedAccount();
 
-        CoPad pad = websocketService.releaseLock(lockReleaseDTO, account);
+        CoLock lock = websocketService.releaseLock(lockReleaseDTO, account);
 
-        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(pad));
+        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(lock, lockReleaseDTO));
         template.convertAndSend("/pad." + padId, payload.getMsg());
         return payload;
     }
@@ -185,9 +185,9 @@ public class WebsocketController {
 
         final CoIndividual account = permissionService.loggedAccount();
 
-        CoPad pad = websocketService.releaseLock(lockReleaseDTO, account);
+        CoLock lock = websocketService.releaseLock(lockReleaseDTO, account);
 
-        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(pad));
+        final RestResponse payload = RestResponse.ok(ExtensionsKt.socketLockReleasedVO(lock, lockReleaseDTO));
         template.convertAndSend("/pad." + padId, payload.getMsg());
         return payload;
     }

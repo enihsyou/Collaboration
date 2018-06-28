@@ -59,6 +59,10 @@ public class CoLock extends AbstractPersistable<Long> {
     @NotNull
     private Instant createdTime = Instant.now();
 
+    /** 锁失效的时间 */
+    @NotNull
+    private Instant expiredTime = createdTime.plus(6, ChronoUnit.HOURS);
+
     ////
     // Functions
     ////
@@ -112,7 +116,7 @@ public class CoLock extends AbstractPersistable<Long> {
      * 有效时长6小时
      */
     public boolean isExpired() {
-        return Instant.now().isAfter(createdTime.plus(6, ChronoUnit.HOURS));
+        return Instant.now().isAfter(expiredTime);
     }
 
     ////
@@ -135,6 +139,11 @@ public class CoLock extends AbstractPersistable<Long> {
     @NotNull
     public LocalDateTime getCreatedTime() {
         return LocalDateTime.ofInstant(createdTime, ZoneId.systemDefault());
+    }
+
+    @NotNull
+    public Instant getExpiredTime() {
+        return expiredTime;
     }
 }
 

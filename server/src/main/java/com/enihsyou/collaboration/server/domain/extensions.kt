@@ -1,5 +1,6 @@
 package com.enihsyou.collaboration.server.domain
 
+import com.enihsyou.collaboration.server.pojo.LockReleaseDTO
 import com.enihsyou.collaboration.server.util.DetailLevel
 
 fun CoIndividual.toCreateVO(): Any = mapOf(
@@ -153,10 +154,23 @@ fun CoPad.socketPadFetchVO(): Any {
     return this.toDetailVO()
 }
 
-fun CoPad.socketLockReleasedVO(): Any {
-    return this.toDetailVO()
-}
+fun CoLock.socketLockAcquireVO(): Any = mapOf(
+    "lock_id" to id,
+    "lock_pad_id" to pad.id,
+    "range" to range,
+    "range_text" to pad.body.substring(range.start, range.endInclusive),
+    "locker" to locker.username,
+    "is_insert_lock" to isInsert,
+    "created_time" to createdTime,
+    "expired_time" to expiredTime
+)
 
-fun CoLock.socketLockAcquireVO(): Any {
-    return this.toDetailVO()
-}
+fun CoLock.socketLockReleasedVO(lockReleaseDTO: LockReleaseDTO): Any = mapOf(
+    "lock_id" to id,
+    "lock_pad_id" to pad.id,
+    "range" to range,
+    "is_modified" to lockReleaseDTO.modified,
+    "replacement" to lockReleaseDTO.replacement,
+    "locker" to locker.username,
+    "is_insert" to isInsert
+)

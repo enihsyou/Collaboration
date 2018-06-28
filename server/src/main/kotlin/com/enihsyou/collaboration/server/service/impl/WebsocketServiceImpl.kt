@@ -8,6 +8,7 @@ import com.enihsyou.collaboration.server.pojo.LockAcquireDTO
 import com.enihsyou.collaboration.server.pojo.LockReleaseDTO
 import com.enihsyou.collaboration.server.pojo.WrongArgumentException
 import com.enihsyou.collaboration.server.repository.LockRepository
+import com.enihsyou.collaboration.server.repository.PadRepository
 import com.enihsyou.collaboration.server.service.DiffService
 import com.enihsyou.collaboration.server.service.DocumentService
 import com.enihsyou.collaboration.server.service.PadService
@@ -22,7 +23,8 @@ class WebsocketServiceImpl(
     private val diffService: DiffService,
     private val padService: PadService,
     private val documentService: DocumentService,
-    private val lockRepository: LockRepository
+    private val lockRepository: LockRepository,
+    private val padRepository: PadRepository
 ) : WebsocketService {
 
     override fun fetchStatus(fetchPadDTO: FetchPadDTO): CoPad {
@@ -40,20 +42,22 @@ class WebsocketServiceImpl(
 //        if (client_revision <= pad.)
 
         val lock = documentService.acquire(pad, lock_range, account)
+        lockRepository.save(lock)
         return lock
     }
 
-    override fun releaseLock(lockReleaseDTO: LockReleaseDTO, account: CoIndividual): CoPad {
+    override fun releaseLock(lockReleaseDTO: LockReleaseDTO, account: CoIndividual): CoLock {
         val (pad_id, client_revision, username, lock_id, modified, replace_with) = lockReleaseDTO
 
         val pad = padService.fetchPad(pad_id)
-        if (!modified || replace_with == null) return pad
-
         val lock = lockRepository.queryById(lock_id)
 
-        documentService.release(lock, replace_with)
-
-        return pad
+        if (modified && replace_with != null) {
+            documentService.release(lock, replace_with)
+            padRepository.save(pad)
+        }
+        lockRepository.delete(lock)
+        return lock
     }
 
     private fun String.toRange(): IntRange {
@@ -61,7 +65,7 @@ class WebsocketServiceImpl(
             .takeIf { it.size == 2 } ?: throw WrongArgumentException(this)
 
         val (first, second) = split
-            .map { it.toIntOrNull() ?: throw WrongArgumentException(it, adition = "不是整数") }
+            .map { it.toIntOrNull() ?: throw WrongArgumentException(it, addition = "不是整数") }
 
         return first..second
     }
