@@ -7,6 +7,11 @@ GET http://{{host}}/account/info?username=aaa
 POST http://{{host}}/account
 Content-Type: application/json
 
+{
+  "username": "123",
+  "password": "123"
+}
+
 < request/user.json
 
 ###
@@ -14,6 +19,11 @@ Content-Type: application/json
 // 登录
 POST http://{{host}}/account/login
 Content-Type: application/json
+
+{
+  "username": "123",
+  "password": "123"
+}
 
 < request/user.json
 
@@ -66,6 +76,11 @@ Cookie: {{cookie}}
 POST http://{{host}}/pads
 Content-Type: application/json
 Cookie: {{cookie}}
+
+{
+  "title": "This is a title."
+}
+
 
 < request/create_pad.json
 
@@ -124,9 +139,21 @@ Cookie: {{cookie}}
 ###
 // 分享文稿 或 分享给指定用户
 // level = [edit | view]
-// target 是可选参数，给了就指定分享给特定用户
-POST http://{{host}}/pads/{{pad_id}}/share?level=edit&target=username
+
+// 通过链接获得文档的任何人可编辑
+// 通过链接获得文档的任何人只可查看，实际作用是修改邀请链接的权限
+POST http://{{host}}/pads/{{pad_id}}/share/link?level=view
 Cookie: {{cookie}}
+###
+// 仅以下列表成员可查看可编辑，修改用户的权限，没有就添加
+POST http://{{host}}/pads/{{pad_id}}/share/member?level=edit&invitee=abc
+Cookie: {{cookie}}
+###
+// 删除列表中的一个成员
+DELETE http://{{host}}/pads/{{pad_id}}/share/member?invitee=abc
+Cookie: {{cookie}}
+###
+
 
 ###
 // 加入文稿

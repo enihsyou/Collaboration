@@ -86,7 +86,8 @@ fun CoPad.toDetailVO(): Any {
         "is_locked" to isLocked,
         "locks" to locks.map { it.toDetailVO() },
         "contributions" to contributes.map { it.toDetailVO() },
-        "workers" to workers.map { it.toDetailVO() }
+        "workers" to workers.map { it.toDetailVO() },
+        "invite_link" to inviteLink.toCreateVO()
     )
 
     return mapOf(
@@ -144,7 +145,6 @@ fun CoPadInstant.toTagAddedVO(): Any = mapOf(
 fun CoInviteLink.toCreateVO(): Any = mapOf(
     "token" to token,
     "pad" to pad.id,
-    "invitee" to invitee,
     "permission" to permission,
     "created_time" to createdTime,
     "expired_time" to expiredTime

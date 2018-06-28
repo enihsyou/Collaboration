@@ -8,10 +8,10 @@ import com.enihsyou.collaboration.server.domain.CoPadControlBlock
 import com.enihsyou.collaboration.server.domain.CoPadInstant
 import com.enihsyou.collaboration.server.pojo.InstantNotExistException
 import com.enihsyou.collaboration.server.pojo.InviteLinkHasExpiredException
-import com.enihsyou.collaboration.server.pojo.InviteLinkNotTargetedException
 import com.enihsyou.collaboration.server.pojo.PadCreateDTO
 import com.enihsyou.collaboration.server.pojo.PadSaveDTO
 import com.enihsyou.collaboration.server.pojo.PadUpdateDTO
+import com.enihsyou.collaboration.server.repository.IndividualRepository
 import com.enihsyou.collaboration.server.repository.InviteLinkRepository
 import com.enihsyou.collaboration.server.repository.PadBlockRepository
 import com.enihsyou.collaboration.server.repository.PadRepository
@@ -25,6 +25,7 @@ import java.util.*
 class PadServiceImpl(
     private val padRepository: PadRepository,
     private val padBlockRepository: PadBlockRepository,
+    private val individualRepository: IndividualRepository,
     private val inviteLinkRepository: InviteLinkRepository
 ) : PadService {
 
@@ -44,8 +45,18 @@ class PadServiceImpl(
             .setBelongTo(account)
             .setTitle(title)
 
+
         /*保存新创建的文稿到数据库*/
         padRepository.save(pad)
+
+        val link = CoInviteLink()
+            .setPad(pad)
+            .setPermission(CoLinkStatus.CAN_VIEW)
+            .setToken(UUID.randomUUID().toString())
+
+        pad.inviteLink = link
+        padRepository.save(pad)
+
 
         /*创建多对多关系*/
         val block = CoPadControlBlock()
@@ -122,19 +133,50 @@ class PadServiceImpl(
         return pad
     }
 
-    override fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String?): CoInviteLink {
+    override fun reassignPadShareLevel(padId: Long, shareLevel: ShareLevel): CoInviteLink {
         /*从数据库中获取对象*/
         val pad = fetchPad(padId)
 
-        val link = CoInviteLink()
-            .setPad(pad)
-            .setInvitee(invitee)
+        /*修改邀请链接权限 生成新token*/
+        val link = pad.inviteLink
             .setPermission(shareLevel.toCoLinkStatus())
             .setToken(UUID.randomUUID().toString())
 
         inviteLinkRepository.save(link)
 
         return link
+    }
+
+    override fun reassignPadShareLevelToMember(padId: Long, shareLevel: ShareLevel, invitee: String): CoPad {
+        /*从数据库中获取对象*/
+        val pad = fetchPad(padId)
+        val inviteeAccount = individualRepository.getUser(invitee)
+
+        val link = CoPadControlBlock()
+            .setIndividual(inviteeAccount)
+            .setPad(pad)
+            .setStatus(shareLevel.toCoLinkStatus())
+
+        pad.workers.add(link)
+
+        padRepository.save(pad)
+
+        return pad
+    }
+
+    override fun removePadShareMember(padId: Long, invitee: String): CoPad {
+        /*从数据库中获取对象*/
+        val pad = fetchPad(padId)
+
+        pad.workers.removeIf {
+            it.individual.username == invitee
+        }
+        pad.locks.removeIf {
+            it.locker.username == invitee
+        }
+        /*其他数据先不移除*/
+
+        return pad
     }
 
     override fun revokeShare(padId: Long, target: String) {
@@ -149,7 +191,6 @@ class PadServiceImpl(
         /*从数据库中获取对象*/
         val link = inviteLinkRepository.queryByToken(token)
 
-        if (!link.isTargeted(account.username)) throw InviteLinkNotTargetedException(account.username)
         if (link.isExpired) throw InviteLinkHasExpiredException(token)
         val block = CoPadControlBlock()
             .setStatus(link.permission)

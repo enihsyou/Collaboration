@@ -68,6 +68,9 @@ public class CoPad extends AbstractPersistable<Long> {
     @NotNull
     private Set<CoBlame> contributes = new HashSet<>();
 
+    @OneToOne(mappedBy = "pad", cascade = CascadeType.ALL)
+    private CoInviteLink inviteLink;
+
     /** 文稿创建的时间 */
     @NotNull
     private Instant createdTime = now();
@@ -110,6 +113,15 @@ public class CoPad extends AbstractPersistable<Long> {
     ////
     // Getter Setter
     ////
+
+    public CoInviteLink getInviteLink() {
+        return inviteLink;
+    }
+
+    public CoPad setInviteLink(CoInviteLink inviteLink) {
+        this.inviteLink = inviteLink;
+        return this;
+    }
 
     /** 获取当前文稿的版本号 */
     @NotNull

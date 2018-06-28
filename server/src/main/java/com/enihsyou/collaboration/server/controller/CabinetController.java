@@ -84,7 +84,7 @@ public class CabinetController {
     /**
      * 用户修改文稿的信息
      * 需要管理权限
-     *
+     * <p>
      * 也就是修改文稿标题信息
      *
      * @param padId 修改的目标id号
@@ -107,7 +107,7 @@ public class CabinetController {
     /**
      * 用户删除一篇文稿
      * 需要管理权限
-     *
+     * <p>
      * 包括关联到这篇文稿下的所有贡献记录、锁的记录、分享链接全部丢失
      *
      * @param padId 删除的目标id号
@@ -130,7 +130,7 @@ public class CabinetController {
     /**
      * 用户只读预览一篇自己文件柜里的文稿
      * 需要编辑权限
-     *
+     * <p>
      * 内容包含历史记录的引用，和当前文档中的锁的情况和文稿主体
      *
      * @param padId 想要预览的文稿id号
@@ -200,7 +200,7 @@ public class CabinetController {
     /**
      * 拥有该文档的用户，将文档回滚到之前的状态
      * 需要管理权限
-     *
+     * <p>
      * 回滚后，在之后的历史状态将不存在
      *
      * @param padId    想要进行回滚的文稿id号
@@ -228,23 +228,60 @@ public class CabinetController {
      * @param padId       需要分享的文稿id号
      * @param level       创建出来的分享链接的分享等级。
      *                    有两个分享等级{@link ShareLevel#CAN_EDIT }可查看和{@link ShareLevel#CAN_EDIT}可编辑
-     * @param shareTarget 可选，指定的分享用户，需要用户存在
      *
      * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
      * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
      */
-    @PostMapping("{padId}/share")
+    @PostMapping("{padId}/share/link")
     public RestResponse sharePad(@PathVariable long padId,
-                                 @RequestParam String level,
-                                 @RequestParam(required = false) String shareTarget) {
+                                 @RequestParam String level) {
         final String username = PermissionUtil.currentUsername();
-        LOGGER.debug("分享文稿 [{}] pad: #{} to: {} share level: {}", username, padId, shareTarget, level);
+        LOGGER.debug("修改分享文稿链接权限 [{}] pad: #{} share level: {}", username, padId, level);
 
         permissionService.checkOwnership(padId, username);
 
         ShareLevel shareLevel = ShareLevel.parseLevel(level);
 
-        final CoInviteLink inviteLink = padService.sharePadTo(padId, shareLevel, shareTarget);
+        final CoInviteLink inviteLink = padService.reassignPadShareLevel(padId, shareLevel);
+
+        return RestResponse.ok(ExtensionsKt.toCreateVO(inviteLink));
+    }
+
+    /**
+     * 用户分享协同文稿
+     * 需要管理权限
+     *
+     * @param padId       需要分享的文稿id号
+     * @param level       创建出来的分享链接的分享等级。
+     *                    有两个分享等级{@link ShareLevel#CAN_EDIT }可查看和{@link ShareLevel#CAN_EDIT}可编辑
+     *
+     * @throws com.enihsyou.collaboration.server.pojo.PadNotExistException 文稿号不存在
+     * @throws com.enihsyou.collaboration.server.pojo.NeedLoginException   用户未登录
+     */
+    @PostMapping("{padId}/share/member")
+    public RestResponse sharePadToMember(@PathVariable long padId,
+                                         @RequestParam String level,
+                                         @RequestParam String invitee) {
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("添加分享文稿 [{}] pad: #{} share level: {} to: {}", username, padId, level, invitee);
+
+        permissionService.checkOwnership(padId, username);
+
+        ShareLevel shareLevel = ShareLevel.parseLevel(level);
+
+        final CoPad inviteLink = padService.reassignPadShareLevelToMember(padId, shareLevel, invitee);
+
+        return RestResponse.ok(ExtensionsKt.toCreateVO(inviteLink));
+    }
+
+    @DeleteMapping("{padId}/share/member")
+    public RestResponse removeSharePadToMember(@PathVariable long padId,
+                                         @RequestParam String invitee) {
+        final String username = PermissionUtil.currentUsername();
+        LOGGER.debug("删除文稿协作者 [{}] pad: #{} who: {}", username, padId, invitee);
+        permissionService.checkOwnership(padId, username);
+
+        final CoPad inviteLink = padService.removePadShareMember(padId, invitee);
 
         return RestResponse.ok(ExtensionsKt.toCreateVO(inviteLink));
     }

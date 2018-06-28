@@ -93,7 +93,24 @@ interface PadService {
      * @param shareLevel 期望的分享等级
      * @param invitee    分享给的用户名，可选，为null意思是给所有人
      */
-    fun sharePadTo(padId: Long, shareLevel: ShareLevel, invitee: String?): CoInviteLink
+    fun reassignPadShareLevel(padId: Long, shareLevel: ShareLevel): CoInviteLink
+
+    /**
+     * 以指定的暴露等级分享文档给指定用户，创建分享链接
+     *
+     * @param padId      创建分享链接的目标文稿
+     * @param shareLevel 期望的分享等级
+     * @param invitee    分享给的用户名，可选，为null意思是给所有人
+     */
+    fun reassignPadShareLevelToMember(padId: Long, shareLevel: ShareLevel, invitee: String): CoPad
+
+    /**
+     * 以指定的暴露等级分享文档给指定用户，创建分享链接
+     *
+     * @param padId      创建分享链接的目标文稿
+     * @param invitee    分享给的用户名，可选，为null意思是给所有人
+     */
+    fun removePadShareMember(padId: Long, invitee: String): CoPad
 
     /**
      * 移除文稿的分享令牌

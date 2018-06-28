@@ -1,7 +1,6 @@
 package com.enihsyou.collaboration.server.domain;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 import org.springframework.util.ClassUtils;
@@ -11,7 +10,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 /**
  * 邀请链接。
@@ -28,12 +26,8 @@ public class CoInviteLink implements Persistable<String> {
     @NotNull
     private String token = "";
 
-    /** 被邀请的人 */
-    @Nullable
-    private String invitee;
-
     /** 被邀请者加入的文稿[CoPad] */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @NotNull
     private CoPad pad = CoPad.DUMMY;
 
@@ -53,12 +47,6 @@ public class CoInviteLink implements Persistable<String> {
     ////
     // Functions
     ////
-
-    /** 测试给定的用户名是否是这个邀请链接允许的用户 */
-    public boolean isTargeted(String username) {
-        if (invitee == null) return true;
-        return Objects.equals(invitee, username);
-    }
 
     /** 测试这个邀请链接有没有过期 */
     public boolean isExpired() {
@@ -83,18 +71,6 @@ public class CoInviteLink implements Persistable<String> {
     /** 设置邀请令牌 */
     public CoInviteLink setToken(@NotNull final String token) {
         this.token = token;
-        return this;
-    }
-
-    /** 获取被邀请者 */
-    @Nullable
-    public String getInvitee() {
-        return invitee;
-    }
-
-    /** 设置被邀请者 */
-    public CoInviteLink setInvitee(@Nullable final String invitee) {
-        this.invitee = invitee;
         return this;
     }
 
