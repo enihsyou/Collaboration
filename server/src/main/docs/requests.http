@@ -251,7 +251,34 @@ Content-Type: application/json
 
 
 ###
-GET http://{{host}}/pads/6
+GET http://{{host}}/account
 Cookie: {{cookie}}
 
 ###
+GET http://{{host}}/pads/10
+Cookie: {{cookie}}
+
+
+###
+POST http://{{host}}/account
+Content-Type: application/json
+
+{
+  "username": "321",
+  "password": "321"
+}
+###
+POST http://{{host}}/account/login
+Content-Type: application/json
+
+{
+  "username": "321",
+  "password": "321"
+}
+> {% client.global.set("cookie", response.headers.valueOf("Set-Cookie")); %}
+###
+POST http://{{host}}/pads/join?token=c97b2778-6f8e-46e2-af52-b57146f9b7e7
+Cookie: {{cookie}}
+
+###
+

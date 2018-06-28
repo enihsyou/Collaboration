@@ -28,13 +28,13 @@ public class CoPadControlBlock {
 
     /** 链接的一端：用户文件柜 */
     @Id
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     @NotNull
     private CoIndividual individual = DUMMY;
 
     /** 链接的另一端：文稿 */
     @Id
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     @NotNull
     private CoPad pad = CoPad.DUMMY;
 
@@ -47,6 +47,15 @@ public class CoPadControlBlock {
     @NotNull
     private Instant createdTime = now();
 
+    public CoPadControlBlock() {
+    }
+
+    public CoPadControlBlock(@NotNull CoIndividual individual, @NotNull CoPad pad) {
+        this.individual = individual;
+        this.pad = pad;
+        individual.addPad(this);
+        pad.getWorkers().add(this);
+    }
     ////
     // Getter Setter
     ////

@@ -55,17 +55,12 @@ class PadServiceImpl(
             .setToken(UUID.randomUUID().toString())
 
         pad.inviteLink = link
-        padRepository.save(pad)
-
 
         /*创建多对多关系*/
-        val block = CoPadControlBlock()
-            .setIndividual(account)
-            .setPad(pad)
+        val block = CoPadControlBlock(account, pad)
             .setStatus(CoLinkStatus.OWN)
 
-        /*保存关系到数据库*/
-        padBlockRepository.save(block)
+        pad.workers += block
 
         return pad
     }
@@ -152,12 +147,11 @@ class PadServiceImpl(
         val pad = fetchPad(padId)
         val inviteeAccount = individualRepository.getUser(invitee)
 
-        val link = CoPadControlBlock()
-            .setIndividual(inviteeAccount)
-            .setPad(pad)
+
+        val link = CoPadControlBlock(inviteeAccount, pad)
             .setStatus(shareLevel.toCoLinkStatus())
 
-        pad.workers.add(link)
+        padBlockRepository.save(link)
 
         padRepository.save(pad)
 
@@ -192,12 +186,13 @@ class PadServiceImpl(
         val link = inviteLinkRepository.queryByToken(token)
 
         if (link.isExpired) throw InviteLinkHasExpiredException(token)
-        val block = CoPadControlBlock()
-            .setStatus(link.permission)
-            .setIndividual(account)
-            .setPad(link.pad)
 
-        account.pads += block
+        val block = CoPadControlBlock(account, link.pad)
+            .setStatus(link.permission)
+
+        link.pad.workers += block
+
+        println(link.pad.workers)
 
         return link.pad
     }

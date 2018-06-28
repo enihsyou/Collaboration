@@ -26,8 +26,10 @@ class PermissionService(
         username ?: throw NeedLoginException()
 
         val account = fetchAccount(username)
-        if (account.pads.none { it.pad.id == padId })
+        if (account.pads.filter { it.pad.id == padId }
+                .none { it.pad.belongTo.username == username })
             throw PadNotOwnedException(padId, username)
+
     }
 
     /**检查用户[username]是否能编辑文稿[padId]*/
@@ -35,8 +37,7 @@ class PermissionService(
         username ?: throw NeedLoginException()
 
         val account = fetchAccount(username)
-        if (account.pads.filter { it.pad.id == padId }
-                .none { it.pad.belongTo.username == username })
+        if (account.pads.none { it.pad.id == padId })
             throw PadNotOwnedException(padId, username)
     }
 

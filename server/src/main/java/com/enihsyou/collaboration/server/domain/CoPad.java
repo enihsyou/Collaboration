@@ -46,12 +46,12 @@ public class CoPad extends AbstractPersistable<Long> {
     private String body = "";
 
     /** 拥有本文稿的其他文件柜，也就是协同合作参与人员 */
-    @OneToMany(mappedBy = "pad", orphanRemoval = true)
+    @OneToMany(mappedBy = "pad", orphanRemoval = true, cascade = CascadeType.ALL)
     @NotNull
     private Set<CoPadControlBlock> workers = new HashSet<>();
 
     /** 文稿的每个历史状态 */
-    @OneToMany(mappedBy = "belongTo", orphanRemoval = true)
+    @OneToMany(mappedBy = "belongTo", orphanRemoval = true, cascade = CascadeType.ALL)
     @NotNull
     private Set<CoPadInstant> instants = new HashSet<>();
 

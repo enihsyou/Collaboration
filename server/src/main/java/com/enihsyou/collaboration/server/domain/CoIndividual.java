@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.time.Instant;
@@ -40,7 +41,7 @@ public class CoIndividual extends AbstractPersistable<Long> {
      * 用户的文件柜里面存有的文档集合
      * 用来存放用户拥有的所有文档，包括创建的和被邀请合作的
      */
-    @OneToMany(mappedBy = "individual", orphanRemoval = true)
+    @OneToMany(mappedBy = "individual", orphanRemoval = true, cascade = CascadeType.ALL)
     @NotNull
     private Set<CoPadControlBlock> pads = new HashSet<>();
 
