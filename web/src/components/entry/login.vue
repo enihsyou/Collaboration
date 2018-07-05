@@ -47,7 +47,7 @@
           </span>
         </span>
       </button>
-      <router-link to="/register">注册新用户</router-link>
+      <router-link :to="{path:'/register',query:routerQuery}">注册新用户</router-link>
       <!--<router-link to="/forgot">忘记密码</router-link>-->
     </div>
   </div>
@@ -56,13 +56,14 @@
 <script>
 
   export default {
-    name: "signin",
+    name   : "signin",
     data() {
       return {
-        username: '',
-        password: '',
-        isSent: false,
-        isDev: this.$.env === 'development'
+        routerQuery: null,
+        username   : '',
+        password   : '',
+        isSent     : false,
+        isDev      : this.$.env === 'development'
       }
     },
     methods: {
@@ -82,9 +83,9 @@
           return;
         }
         const loading = this.$loading({
-          lock: true,
-          text: '登录中...',
-          spinner: 'el-icon-loading',
+          lock      : true,
+          text      : '登录中...',
+          spinner   : 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.5)'
         });
         this.$.ajax.post('/account/login', JSON.stringify({
@@ -106,6 +107,7 @@
     },
     created() {
       delete sessionStorage.token;
+      this.routerQuery = this.$route.query;
     }
   }
 </script>

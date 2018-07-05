@@ -2,7 +2,8 @@
   <div class="container">
     <div class="invite-item initPermission">
       <p class="title">设置分享链接权限：</p>
-      <el-select style="width:100%;" v-model="linkPermission" placeholder="请选择">
+      <el-select style="width:100%;" v-model="linkPermission" placeholder="请选择"
+                 @change="changePermission">
         <el-option label="通过链接获得文档的任何人【只可查看】" value="CAN_VIEW">
           <i class=" el-icon-search"></i>
           <span class="select-option-label">通过链接获得文档的任何人【只可查看】</span>
@@ -56,8 +57,9 @@
       </div>
     </div>
     <div class="invite-item inviteMember">
-      <p class="title">邀请成员成员：</p>
-      <el-autocomplete style="width:100%" class="inline-input" v-model="inviteMemberEmail" placeholder="请输入对方邮箱/用户名..."
+      <p class="title">邀请成员：</p>
+      <el-autocomplete disabled title="未完成"
+                       style="width:100%" class="inline-input" v-model="inviteMemberEmail" placeholder="请输入对方邮箱/用户名..."
                        :trigger-on-focus="false" :fetch-suggestions="querySearch" @select="addMember">
         <el-button slot="append" icon="el-icon-search">搜索</el-button>
       </el-autocomplete>
@@ -67,14 +69,14 @@
 
 <script>
   export default {
-    name: "modal_inviteBox",
-    props: {
-      id: {
-        type: String,
+    name   : "modal_inviteBox",
+    props  : {
+      id            : {
+        type   : String,
         default: ''
       },
-      workers: {
-        type: Array,
+      workers       : {
+        type   : Array,
         default: [
           // {
           //   "account_id": 1,
@@ -87,15 +89,23 @@
           //   "share_time": "2018-05-21T21:30:53.405"
           // }
         ]
+      },
+      shareToken    : {
+        type   : String,
+        default: null
+      },
+      linkPermission: {
+        type   : String,
+        default: 'CAN_VIEW'
       }
     },
     data() {
       return {
-        linkPermission: 'CAN_VIEW',
-        inviteLink: '',
+        inviteLink       : '',
         inviteMemberEmail: '',
       }
-    },
+    }
+    ,
     methods: {
       copyLink() {
         if (this.inviteLink.length < 1) {
@@ -110,6 +120,23 @@
           this.$message.error('复制到剪贴板失败，请自行选择复制。')
         }
       },
+      changePermission() {
+        const loading = this.$loading({
+          lock      : true,
+          text      : '数据初始化...',
+          spinner   : 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        const level = this.linkPermission.split('_')[1].toLowerCase();
+        this.$.ajax.post(`/pads/${this.id}/share/link?level=${level}`).then(res => {
+
+        }, err => {
+          this.$message.error('修改权限失败：' + err.msg);
+          this.$message.warning('操作不会生效！');
+        }).finally(_ => {
+          loading.close();
+        })
+      },
       querySearch(queryString, expendList) {
         const res = [];
         //todo 去服务器搜啊
@@ -121,6 +148,10 @@
         this.inviteMemberEmail = '';
         console.log('添加新成员：', member);
       }
+    }
+    ,
+    created() {
+      this.inviteLink = `${window.location.origin}/user/${this.id}?token=${this.shareToken}`;
     }
   }
 </script>

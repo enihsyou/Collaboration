@@ -12,7 +12,7 @@ import App from './App'
 const util = {
   env: process.env.NODE_ENV,
   protocol: process.env.NODE_ENV === 'development' ? 'http:' : window.location.protocol,
-  baseURL: '47.100.117.174:8999',
+  baseURL: process.env.NODE_ENV === 'development' ? 'enihsyou.synology.me:8999' : window.location.host,
   isNumber(input) {
     switch (typeof input) {
       case 'number':

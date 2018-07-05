@@ -68,23 +68,24 @@
           </span>
         </span>
       </button>
-      <router-link to="/login">返回登录</router-link>
+      <router-link :to="{path:'/login',query:routerQuery}">返回登录</router-link>
     </div>
   </div>
 </template>
 
 <script>
   export default {
-    name: "signup",
+    name   : "signup",
     data() {
       return {
-        username: '',
-        token: this.$route.query.token,
+        routerQuery    : null,
+        username       : '',
+        token          : this.$route.query.token,
         // nickname: '',
-        password: '',
+        password       : '',
         confirmPassword: '',
-        isSent: false,
-        isDup: false
+        isSent         : false,
+        isDup          : false
       }
     },
     methods: {
@@ -121,9 +122,9 @@
         //   return;
         // }
         const loading = this.$loading({
-          lock: true,
-          text: '注册中...',
-          spinner: 'el-icon-loading',
+          lock      : true,
+          text      : '注册中...',
+          spinner   : 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.5)'
         });
         this.$.ajax.post(`/account`, JSON.stringify({
@@ -132,7 +133,10 @@
           // nickname: this.nickname
         })).then((res) => {
             this.$message.success('注册成功，请登录');
-            this.$router.replace('/login');
+            this.$router.replace({
+              path : '/login',
+              query: this.routerQuery
+            });
           }, (res) => {
             this.$message.error(`注册失败：${res.msg}`);
           }
@@ -146,7 +150,7 @@
 
     },
     mounted() {
-
+      this.routerQuery = this.$route.query;
     }
   }
 </script>

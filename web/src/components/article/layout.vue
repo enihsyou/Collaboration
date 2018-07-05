@@ -83,12 +83,12 @@
   }
 
   export default {
-    name: "layout",
+    name    : "layout",
     data() {
       return {
-        navHasHide: false,
-        myArticles: [],
-        otherArticles: [],
+        navHasHide    : false,
+        myArticles    : [],
+        otherArticles : [],
         currentArticle: {}
       }
     },
@@ -97,20 +97,20 @@
         return this.$route.params.id;
       }
     },
-    methods: {
+    methods : {
       /*起草新文章*/
       draftArticle() {
         this.$prompt('请输入文章标题', '提示', {
           confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputPattern: /.{1,20}/,
+          cancelButtonText : '取消',
+          inputPattern     : /.{1,20}/,
           inputErrorMessage: '标题字数应在1~20字之间！'
         }).then((dialogInfo) => {
           /*载入动画*/
           const loading = this.$loading({
-            lock: true,
-            text: '新建文档中...',
-            spinner: 'el-icon-loading',
+            lock      : true,
+            text      : '新建文档中...',
+            spinner   : 'el-icon-loading',
             background: 'rgba(0, 0, 0, 0.7)'
           });
           /*用户输入标题后发送给服务器*/
@@ -153,19 +153,21 @@
       /*删除了文章*/
       delArticle(id) {
         this.$msgbox.close();
-        this.currentArticle = {};
-        const callback = (article, index) => {
-          if (index < this.myArticles.length) {
-            //在我的文章里
-            this.myArticles.splice(index, 1)
-          } else {
-            //在其他文章里
-            this.otherArticles.splice(index - this.myArticles.length, 1)
-          }
-        };
-        this.execArticle(id, callback);
+        if (id > 0) {
+          this.currentArticle = {};
+          const callback = (article, index) => {
+            if (index < this.myArticles.length) {
+              //在我的文章里
+              this.myArticles.splice(index, 1)
+            } else {
+              //在其他文章里
+              this.otherArticles.splice(index - this.myArticles.length, 1)
+            }
+          };
+          this.execArticle(id, callback);
+        }
         this.showNav();
-        this.$router.push('/user');
+        this.$router.replace('/user');
       },
       /*查找文章并执行动作*/
       execArticle(id, callback, ...args) {
@@ -197,53 +199,78 @@
       }
     },
     created() {
+      console.log('路由信息:', this.$route);
+      //获取是否是邀请链接
+      const routerToken = this.$route.query.token;
+      console.log('routerToken:', routerToken);
+      if (!sessionStorage.username) {
+        this.$message.warning('请先登录');
+        this.$router.replace({
+          path : '/login',
+          query: {
+            redirect: this.$route.fullPath
+          }
+        });
+        return;
+      }
       const loading = this.$loading({
-        lock: true,
-        text: '数据初始化...',
-        spinner: 'el-icon-loading',
+        lock      : true,
+        text      : '数据初始化...',
+        spinner   : 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       });
-      /*从服务器获取账户内文章*/
-      this.$.ajax.get('/pads?level=brief').then((res) => {
-        console.log('初始化文章列表:', res);
-        let articleID = this.$route.params.id;
-        for (let pad of res.pads) {
-          /*文章分类*/
-          if (pad.share_level === 'OWN') {
-            this.myArticles.push(pad);
-          } else {
-            this.otherArticles.push(pad)
+      if (routerToken) {
+        this.$.ajax.post(`/pads/join?token=${routerToken}`).then(res => {
+          this.$router.replace(`/user/${this.$route.params.id}`);
+        }, err => {
+          window.alert('加入文章失败：' + err.msg);
+          this.$router.replace('/user');
+        }).finally(f=>{
+          this.$router.go(0);
+        })
+      } else {
+        /*从服务器获取账户内文章*/
+        this.$.ajax.get('/pads?level=brief').then((res) => {
+          console.log('初始化文章列表:', res);
+          let articleID = this.$route.params.id;
+          for (let pad of res.pads) {
+            /*文章分类*/
+            if (pad.share_level === 'OWN') {
+              this.myArticles.push(pad);
+            } else {
+              this.otherArticles.push(pad)
+            }
+            /*确认当前文章*/
+            if (articleID === String(pad.id)) {
+              this.hideNav();
+              this.currentArticle = pad;
+            }
           }
-          /*确认当前文章*/
-          if (articleID === String(pad.id)) {
-            this.hideNav();
-            this.currentArticle = pad;
+          /*存在id但未找到*/
+          if (articleID && !this.currentArticle.id) {
+            this.$router.push('/user');
           }
-        }
-        /*存在id但未找到*/
-        if (articleID && !this.currentArticle.id) {
-          this.$router.push('/user');
-        }
-        /*排个序*/
-        this.myArticles.sort((a, b) => a.id > b.id);
-        this.otherArticles.sort((a, b) => a.id > b.id);
-      }, (err) => {
-        const h = this.$createElement;
-        this.$alert(`${err.msg || ''}`, '初始化失败', {
-          center: true,
-          showClose: this.$.env === 'development',
-          showCancelButton: false,
-          confirmButtonText: '返回登录',
-          closeOnClickModal: false,
-          closeOnPressEscape: false
-        }).then((res) => {
-          this.$router.push('/login');
+          /*排个序*/
+          this.myArticles.sort((a, b) => a.id > b.id);
+          this.otherArticles.sort((a, b) => a.id > b.id);
         }, (err) => {
-          this.$message.warning('哼，居然是开发者');
-        });
-      }).finally(() => {
-        loading.close();
-      })
+          const h = this.$createElement;
+          this.$alert(`${err.msg || ''}`, '初始化失败', {
+            center            : true,
+            showClose         : this.$.env === 'development',
+            showCancelButton  : false,
+            confirmButtonText : '返回登录',
+            closeOnClickModal : false,
+            closeOnPressEscape: false
+          }).then((res) => {
+            this.$router.push('/login');
+          }, (err) => {
+            this.$message.warning('哼，居然是开发者');
+          });
+        }).finally(() => {
+          loading.close();
+        })
+      }
     },
     mounted() {
     }

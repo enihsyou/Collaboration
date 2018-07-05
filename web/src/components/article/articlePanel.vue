@@ -36,24 +36,24 @@
                  @click="shareArticle" circle></el-button>
     </div>
     <div id="editableArea" ref="editableArea" contenteditable v-show="range"></div>
-    <div id="rangeArea" style="display: inline-block" ref="rangeArea"></div>
+    <div id="rangeArea" style="display: inline" ref="rangeArea"></div>
     <div class="cursor"></div>
   </div>
 </template>
 
 <script>
   import inviteBox from './modal_inviteBox'
-  import editBox from './modal_editBox'
+  import editBox   from './modal_editBox'
 
   export default {
-    name: "articlePanel",
-    props: {
-      id: {
-        type: String,
+    name   : "articlePanel",
+    props  : {
+      id     : {
+        type   : String,
         default: ''
       },
       isOwner: {
-        type: Boolean,
+        type   : Boolean,
         default: false
       }
     },
@@ -92,19 +92,21 @@
       //连接
       webSocketClient.connect(wsHead, connCallback);
       return {
-        workers: [],
-        current_revision: -1,
-        current_lock_id: -1,
-        title: '',
-        content: '',
-        savedContent: '',
-        range: null,
-        callBtn: false,
-        trySaveCount: 0,
+        workers            : [],
+        current_revision   : -1,
+        current_lock_id    : -1,
+        title              : '',
+        content            : '',
+        savedContent       : '',
+        range              : null,
+        callBtn            : false,
+        trySaveCount       : 0,
+        shareToken         : null,
+        shareLinkPermission: null,
         webSocketClient
       }
     },
-    watch: {
+    watch  : {
       title() {
         window.document.title = `${this.title} - NTM协同文档系统`;
       }
@@ -157,7 +159,6 @@
             break
           }
         }
-        console.log(this.range);
         //给文段加个临时选择标签
         let rangeArea = this.$refs.rangeArea;
         this.range.surroundContents(rangeArea);
@@ -167,26 +168,22 @@
         const rawStartOffset = rangeMatch.index;
         const startOffset = tmpContent.slice(0, rawStartOffset).replace(/<br>/gm, '\n').length;
         const endOffset = startOffset + rangeMatch[1].replace(/<br>/gm, '\n').length;
-        //清除临时选择标签
-        // const Reg = /<div[^>]+>(.*)<\/div>/igm;
-        // while (Reg.test(content.innerHTML)) {
-        //   content.innerHTML = content.innerHTML.replace(Reg, "$1");
-        // }
         //显示载入动画
         const loading = this.$loading({
-          lock: true,
-          text: '向服务器申请修改...',
-          spinner: 'el-icon-loading',
+          lock      : true,
+          text      : '向服务器申请修改...',
+          spinner   : 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         });
+        console.log(`请求修改区间为：${startOffset}~${endOffset}`);
         //向服务器申请加锁
         this.$.ajax.post(`/pad.${this.id}.lock.acquire`, JSON.stringify({
-          pad_id: this.id,
-          username: sessionStorage.username,
+          pad_id         : this.id,
+          username       : sessionStorage.username,
           client_revision: this.current_revision,
-          range: {
+          range          : {
             start: startOffset,
-            end: endOffset
+            end  : endOffset
           }
         })).then((res) => {
           this.current_lock_id = res.lock_id;
@@ -195,14 +192,11 @@
           //转化当前区域为可编辑
           this.range.surroundContents(editableArea);
           editableArea.focus();
-          //清除临时选择标签
-          for (const elem of editableArea.childNodes) editableArea.removeChild(elem)
           this.callBtn = false;
           this.trySaveCount = 0;
         }, (err) => {
           this.$message.error('申请修改失败：' + err.msg);
           this.range = null;
-          for (const elem of content.childNodes) content.removeChild(elem)
         }).finally(() => {
           loading.close();
         });
@@ -212,18 +206,24 @@
       subContent() {
         //提交修改
         const loading = this.$loading({
-          lock: true,
-          text: '提交修改...',
-          spinner: 'el-icon-loading',
+          lock      : true,
+          text      : '提交修改...',
+          spinner   : 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         });
+        const editableArea = this.$refs.editableArea;
+        const Reg = /<div[^>]+>(.*)<\/div>/igm;
+        while (Reg.test(editableArea.innerHTML)) {
+          editableArea.innerHTML = editableArea.innerHTML.replace(Reg, "$1");
+        }
+        console.log('提交的内容：', editableArea.innerHTML.replace(/<br>/gm, '\n'));
         this.$.ajax.post(`/pad.${this.id}.lock.release`, JSON.stringify({
-          pad_id: this.id,
+          pad_id         : this.id,
           client_revision: this.current_revision,
-          lock_id: this.current_lock_id,
-          modified: true,
-          replacement: text,
-          username: sessionStorage.username
+          lock_id        : this.current_lock_id,
+          modified       : true,
+          replacement    : editableArea.innerHTML.replace('<br>', '\n'),
+          username       : sessionStorage.username
         })).then(res => {
           this.$message.success('提交修改成功！');
           //清除编辑区
@@ -237,26 +237,26 @@
       /*取消修改，返回到上个版本*/
       cancelSubContent() {
         this.$confirm('此操作将放弃所有的修改，恢复文档至未编辑前的状态，是否放弃编辑？', '提示', {
-          confirmButtonText: '确定放弃',
-          cancelButtonText: '继续编辑',
-          type: 'error',
-          showClose: false,
-          closeOnClickModal: false,
+          confirmButtonText : '确定放弃',
+          cancelButtonText  : '继续编辑',
+          type              : 'error',
+          showClose         : false,
+          closeOnClickModal : false,
           closeOnPressEscape: false
         }).then((res) => {
           const loading = this.$loading({
-            lock: true,
-            text: '撤销修改...',
-            spinner: 'el-icon-loading',
+            lock      : true,
+            text      : '撤销修改...',
+            spinner   : 'el-icon-loading',
             background: 'rgba(0, 0, 0, 0.7)'
           });
           this.$.ajax.post(`/pad.${this.id}.lock.release`, JSON.stringify({
-            pad_id: this.id,
+            pad_id         : this.id,
             client_revision: this.current_revision,
-            lock_id: this.current_lock_id,
-            modified: false,
-            replacement: '',
-            username: sessionStorage.username
+            lock_id        : this.current_lock_id,
+            modified       : false,
+            replacement    : '',
+            username       : sessionStorage.username
           })).then(res => {
             //清除编辑区
             this.clearRange();
@@ -301,32 +301,32 @@
       },
       /*查看文章历史版本*/
       listArticleHistory() {
-
+        this.$message.warning('正在施工');
       },
       /*编辑文章信息*/
       editArticleInfo() {
         const h = this.$createElement;
         this.$msgbox({
-          title: '编辑文章信息',
-          message: h(editBox, {
+          title             : '编辑文章信息',
+          message           : h(editBox, {
             props: {
-              id: this.id,
+              id   : this.id,
               title: this.title
             },
-            on: {
+            on   : {
               updateTitle: (id, title) => {
                 this.title = title;
                 //传递修改标题的事件
                 this.$emit('updateTitle', id, title)
               },
-              delArticle: () => {
+              delArticle : () => {
                 this.$emit('delArticle', this.id);
               }
             }
           }),
-          closeOnClickModal: false,
+          closeOnClickModal : false,
           closeOnPressEscape: false,
-          showConfirmButton: false,
+          showConfirmButton : false,
         }).then(() => {
 
         }, () => {
@@ -337,16 +337,18 @@
       shareArticle() {
         const h = this.$createElement;
         this.$msgbox({
-          title: '邀请其他小伙伴',
-          message: h(inviteBox, {
+          title             : '邀请其他小伙伴',
+          message           : h(inviteBox, {
             props: {
-              id: this.id,
-              workers: this.workers
+              id            : this.id,
+              workers       : this.workers,
+              shareToken    : this.shareToken,
+              linkPermission: this.shareLinkPermission
             }
           }),
-          closeOnClickModal: false,
+          closeOnClickModal : false,
           closeOnPressEscape: false,
-          showConfirmButton: false,
+          showConfirmButton : false,
         }).catch(() => {
           //关闭邀请框
         });
@@ -366,9 +368,11 @@
         this.current_revision = res.pad.current_revision;
         this.content = res.pad.body;
         this.title = res.pad.title;
+        this.shareToken = res.pad.invite_link.token;
+        this.shareLinkPermission = res.pad.invite_link.permission;
         this.workers = res.pad.workers;
-        this.workers.forEach((woker) => {
-          woker.username = res.accounts[woker.account_id] || '暂无姓名_ID:' + woker.account_id;
+        this.workers.forEach((worker) => {
+          worker.username = res.accounts[worker.account_id] || '暂无姓名_ID:' + worker.account_id;
         });
         this.renderContent();
       }, (err) => {
@@ -384,7 +388,7 @@
 
 <style lang="stylus" scoped>
   #editableArea
-    display inline-block !important
+    display inline !important
     padding .1em 0 .0688em 0
     box-shadow 0 1px 0 deepskyblue
     min-width .5em
